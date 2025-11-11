@@ -42,9 +42,7 @@ export default function TaskCreationModal({
   const [customDescription, setCustomDescription] = useState('');
   const [dueDate, setDueDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showSponseeDropdown, setShowSponseeDropdown] = useState(false);
-  const [showStepDropdown, setShowStepDropdown] = useState(false);
-  const [showTemplateDropdown, setShowTemplateDropdown] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<'sponsee' | 'step' | 'template' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -77,7 +75,15 @@ export default function TaskCreationModal({
     setSelectedTemplate(template);
     setCustomTitle(template.title);
     setCustomDescription(template.description);
-    setShowTemplateDropdown(false);
+    setActiveDropdown(null);
+  };
+
+  const toggleDropdown = (dropdown: 'sponsee' | 'step' | 'template') => {
+    setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
+  };
+
+  const closeAllDropdowns = () => {
+    setActiveDropdown(null);
   };
 
   const handleSubmit = async () => {
@@ -146,9 +152,7 @@ export default function TaskCreationModal({
     setCustomDescription('');
     setDueDate(null);
     setError('');
-    setShowSponseeDropdown(false);
-    setShowStepDropdown(false);
-    setShowTemplateDropdown(false);
+    setActiveDropdown(null);
   };
 
   const handleClose = () => {
@@ -160,8 +164,16 @@ export default function TaskCreationModal({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
+      <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
+        onPress={closeAllDropdowns}
+      >
+        <TouchableOpacity
+          style={styles.modalContent}
+          activeOpacity={1}
+          onPress={(e) => e.stopPropagation()}
+        >
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Assign New Task</Text>
             <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
@@ -180,11 +192,7 @@ export default function TaskCreationModal({
               <Text style={styles.label}>Sponsee *</Text>
               <TouchableOpacity
                 style={styles.dropdown}
-                onPress={() => {
-                  setShowSponseeDropdown(!showSponseeDropdown);
-                  setShowStepDropdown(false);
-                  setShowTemplateDropdown(false);
-                }}
+                onPress={() => toggleDropdown('sponsee')}
               >
                 <Text style={[styles.dropdownText, !selectedSponseeId && styles.placeholderText]}>
                   {selectedSponseeId
@@ -195,15 +203,18 @@ export default function TaskCreationModal({
                 </Text>
                 <ChevronDown size={20} color={theme.textSecondary} />
               </TouchableOpacity>
-              {showSponseeDropdown && (
-                <View style={styles.dropdownMenu}>
+            </View>
+
+            {activeDropdown === 'sponsee' && (
+              <View style={styles.dropdownMenuOverlay}>
+                <ScrollView style={styles.dropdownMenuScrollable}>
                   {sponsees.map((sponsee) => (
                     <TouchableOpacity
                       key={sponsee.id}
                       style={styles.dropdownItem}
                       onPress={() => {
                         setSelectedSponseeId(sponsee.id);
-                        setShowSponseeDropdown(false);
+                        closeAllDropdowns();
                       }}
                     >
                       <Text style={styles.dropdownItemText}>
@@ -211,35 +222,34 @@ export default function TaskCreationModal({
                       </Text>
                     </TouchableOpacity>
                   ))}
-                </View>
-              )}
-            </View>
+                </ScrollView>
+              </View>
+            )}
 
             <View style={styles.formGroup}>
               <Text style={styles.label}>Step Number (Optional)</Text>
               <TouchableOpacity
                 style={styles.dropdown}
-                onPress={() => {
-                  setShowStepDropdown(!showStepDropdown);
-                  setShowTemplateDropdown(false);
-                  setShowSponseeDropdown(false);
-                }}
+                onPress={() => toggleDropdown('step')}
               >
                 <Text style={[styles.dropdownText, !selectedStepNumber && styles.placeholderText]}>
                   {selectedStepNumber ? `Step ${selectedStepNumber}` : 'Select step (optional)'}
                 </Text>
                 <ChevronDown size={20} color={theme.textSecondary} />
               </TouchableOpacity>
-              {showStepDropdown && (
-                <View style={styles.dropdownMenu}>
+            </View>
+
+            {activeDropdown === 'step' && (
+              <View style={styles.dropdownMenuOverlay}>
+                <ScrollView style={styles.dropdownMenuScrollable}>
                   <TouchableOpacity
                     style={styles.dropdownItem}
                     onPress={() => {
                       setSelectedStepNumber(null);
-                      setShowStepDropdown(false);
                       setSelectedTemplate(null);
                       setCustomTitle('');
                       setCustomDescription('');
+                      closeAllDropdowns();
                     }}
                   >
                     <Text style={[styles.dropdownItemText, { fontStyle: 'italic' }]}>No specific step</Text>
@@ -250,18 +260,18 @@ export default function TaskCreationModal({
                       style={styles.dropdownItem}
                       onPress={() => {
                         setSelectedStepNumber(step);
-                        setShowStepDropdown(false);
                         setSelectedTemplate(null);
                         setCustomTitle('');
                         setCustomDescription('');
+                        closeAllDropdowns();
                       }}
                     >
                       <Text style={styles.dropdownItemText}>Step {step}</Text>
                     </TouchableOpacity>
                   ))}
-                </View>
-              )}
-            </View>
+                </ScrollView>
+              </View>
+            )}
 
             <View style={styles.formGroup}>
               <Text style={styles.label}>Task Template (Optional)</Text>
@@ -269,14 +279,12 @@ export default function TaskCreationModal({
                 style={[styles.dropdown, !selectedStepNumber && styles.dropdownDisabled]}
                 onPress={() => {
                   if (selectedStepNumber) {
-                    setShowTemplateDropdown(!showTemplateDropdown);
-                    setShowSponseeDropdown(false);
-                    setShowStepDropdown(false);
+                    toggleDropdown('template');
                   }
                 }}
                 disabled={!selectedStepNumber}
               >
-                <Text style={[styles.dropdownText, styles.placeholderText]}>
+                <Text style={[styles.dropdownText, (!selectedStepNumber || !selectedTemplate) && styles.placeholderText]}>
                   {!selectedStepNumber
                     ? 'Select a step first to see templates'
                     : selectedTemplate
@@ -285,7 +293,10 @@ export default function TaskCreationModal({
                 </Text>
                 <ChevronDown size={20} color={theme.textSecondary} />
               </TouchableOpacity>
-              {showTemplateDropdown && selectedStepNumber && (
+            </View>
+
+            {activeDropdown === 'template' && selectedStepNumber && (
+              <View style={styles.dropdownMenuOverlay}>
                 <ScrollView style={styles.dropdownMenuScrollable}>
                   {templates.length === 0 ? (
                     <View style={styles.dropdownItem}>
@@ -308,8 +319,8 @@ export default function TaskCreationModal({
                     ))
                   )}
                 </ScrollView>
-              )}
-            </View>
+              </View>
+            )}
 
             <View style={styles.formGroup}>
               <Text style={styles.label}>Task Title *</Text>
@@ -413,8 +424,8 @@ export default function TaskCreationModal({
               )}
             </TouchableOpacity>
           </View>
-        </View>
-      </View>
+        </TouchableOpacity>
+      </TouchableOpacity>
     </Modal>
   );
 }
@@ -454,8 +465,6 @@ const createStyles = (theme: any) =>
     },
     formGroup: {
       marginBottom: 20,
-      position: 'relative',
-      zIndex: 1,
     },
     label: {
       fontSize: 14,
@@ -473,7 +482,6 @@ const createStyles = (theme: any) =>
       borderColor: theme.border,
       borderRadius: 8,
       padding: 12,
-      zIndex: 1,
     },
     dropdownDisabled: {
       opacity: 0.5,
@@ -487,41 +495,21 @@ const createStyles = (theme: any) =>
     placeholderText: {
       color: theme.textTertiary,
     },
-    dropdownMenu: {
-      position: 'absolute',
-      top: '100%',
-      left: 0,
-      right: 0,
+    dropdownMenuOverlay: {
       backgroundColor: theme.card,
       borderWidth: 1,
       borderColor: theme.border,
-      borderRadius: 8,
-      marginTop: 8,
-      maxHeight: 200,
-      shadowColor: theme.black,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      elevation: 10,
-      zIndex: 1000,
+      borderRadius: 12,
+      marginBottom: 20,
+      marginHorizontal: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 12,
+      elevation: 15,
     },
     dropdownMenuScrollable: {
-      position: 'absolute',
-      top: '100%',
-      left: 0,
-      right: 0,
-      backgroundColor: theme.card,
-      borderWidth: 1,
-      borderColor: theme.border,
-      borderRadius: 8,
-      marginTop: 8,
       maxHeight: 250,
-      shadowColor: theme.black,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      elevation: 10,
-      zIndex: 1000,
     },
     dropdownItem: {
       padding: 12,
