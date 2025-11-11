@@ -4,7 +4,8 @@
  */
 
 // Import custom matchers from jest-native
-import '@testing-library/jest-native/extend-expect';
+// Temporarily commented out due to ESM issues with React Native 0.81.5
+// import '@testing-library/jest-native/extend-expect';
 
 // Mock console methods to reduce noise in test output
 global.console = {
