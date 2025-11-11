@@ -131,6 +131,29 @@ npm run lint
 
 Runs ESLint using Expo's lint configuration.
 
+### Testing
+
+```bash
+npm test
+```
+
+Runs the test suite using Jest and React Native Testing Library.
+
+**Additional test commands:**
+
+- `npm run test:watch` - Run tests in watch mode for development
+- `npm run test:coverage` - Generate coverage report
+- `npm run test:ci` - Run tests in CI mode with coverage
+
+**Testing Documentation:**
+
+- **[Testing Strategy](TESTING_STRATEGY.md)** - Comprehensive testing philosophy and approach
+- **[Implementation Guide](TESTING_IMPLEMENTATION_GUIDE.md)** - Step-by-step setup instructions
+- **[Quick Reference](TESTING_QUICK_REFERENCE.md)** - Cheat sheet for writing tests
+- **[GitHub Issue](TESTING_GITHUB_ISSUE.md)** - Detailed implementation plan
+
+The project uses Jest with React Native Testing Library for unit and integration testing. See the documentation above for best practices and examples.
+
 ## Project Structure
 
 ```

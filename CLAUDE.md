@@ -189,6 +189,117 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
 4. **Cross-platform Storage**: Use the adapter pattern (see `lib/supabase.ts`) for platform-specific storage
 5. **Row Level Security**: All database operations respect RLS policies - no additional auth checks needed in client code
 
+## Testing
+
+### Testing Stack
+
+The project uses a modern testing stack optimized for React Native/Expo:
+
+- **Jest 29.7+**: Test runner with excellent React Native support
+- **React Native Testing Library 12.4+**: Component testing with accessibility-first approach
+- **jest-expo 51.0+**: Expo preset for Jest with auto-mocking
+- **@testing-library/jest-native**: Additional matchers for React Native
+- **ts-jest**: Native TypeScript support in tests
+
+### Running Tests
+
+```bash
+npm test                  # Run all tests
+npm run test:watch        # Watch mode for development
+npm run test:coverage     # Generate coverage report
+npm run test:ci          # CI mode with coverage
+```
+
+### Testing Documentation
+
+Comprehensive testing documentation is available:
+
+- **[Testing Strategy](TESTING_STRATEGY.md)** - Philosophy, tools, and approach
+- **[Implementation Guide](TESTING_IMPLEMENTATION_GUIDE.md)** - Step-by-step setup
+- **[Quick Reference](TESTING_QUICK_REFERENCE.md)** - Cheat sheet for writing tests
+- **[GitHub Issue](TESTING_GITHUB_ISSUE.md)** - Implementation plan
+
+### Testing Patterns
+
+**Component Testing**:
+```typescript
+import { render, screen, fireEvent } from '@testing-library/react-native';
+
+it('should handle user interaction', () => {
+  const onPress = jest.fn();
+  render(<MyComponent onPress={onPress} />);
+  
+  fireEvent.press(screen.getByText('Button'));
+  expect(onPress).toHaveBeenCalled();
+});
+```
+
+**Context Testing**:
+```typescript
+import { renderHook } from '@testing-library/react-native';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+
+it('should provide auth state', () => {
+  const wrapper = ({ children }) => <AuthProvider>{children}</AuthProvider>;
+  const { result } = renderHook(() => useAuth(), { wrapper });
+  
+  expect(result.current.user).toBeDefined();
+});
+```
+
+**Async Testing**:
+```typescript
+import { waitFor } from '@testing-library/react-native';
+
+it('should load data', async () => {
+  render(<DataComponent />);
+  
+  await waitFor(() => {
+    expect(screen.getByText('Data loaded')).toBeVisible();
+  });
+});
+```
+
+### Mocking Best Practices
+
+**Supabase Mocking**:
+```typescript
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: { signIn: jest.fn() },
+    from: jest.fn(() => ({
+      select: jest.fn().mockResolvedValue({ data: [], error: null }),
+    })),
+  },
+}));
+```
+
+**Expo Module Mocking**:
+```typescript
+jest.mock('expo-secure-store', () => ({
+  getItemAsync: jest.fn(),
+  setItemAsync: jest.fn(),
+}));
+```
+
+### Test Location
+
+Tests are organized by type:
+- `__tests__/hooks/` - Custom hook tests
+- `__tests__/contexts/` - Context provider tests
+- `__tests__/lib/` - Utility function tests
+- `__tests__/components/` - Component tests
+- `__tests__/integration/` - Integration tests
+
+### Coverage Goals
+
+- **Overall**: 80%+ coverage
+- **Critical paths**: 100% (auth, data persistence)
+- **Components**: 70%+ coverage
+- **Utilities**: 90%+ coverage
+
+See `TESTING_STRATEGY.md` for complete testing philosophy and patterns.
+
 ## Platform Considerations
 
 - Expo New Architecture enabled (`newArchEnabled: true`)
