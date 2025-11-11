@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Alert, Share, Switch, Platform } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/lib/supabase';
-import { User, LogOut, Heart, Calendar, Share2, QrCode, Bell } from 'lucide-react-native';
+import { User, LogOut, Heart, Calendar, Share2, QrCode, Bell, Moon, Sun, Monitor } from 'lucide-react-native';
 
 export default function ProfileScreen() {
   const { profile, signOut, refreshProfile } = useAuth();
+  const { themeMode, setThemeMode } = useTheme();
   const [inviteCode, setInviteCode] = useState('');
   const [showInviteInput, setShowInviteInput] = useState(false);
   const [notificationSettings, setNotificationSettings] = useState({
@@ -215,6 +217,45 @@ export default function ProfileScreen() {
         <Text style={styles.sectionTitle}>Settings</Text>
 
         <View style={styles.settingsCard}>
+          <View style={styles.settingRow}>
+            <Monitor size={20} color="#6b7280" />
+            <Text style={styles.settingLabel}>Appearance</Text>
+          </View>
+
+          <View style={styles.themeOptions}>
+            <TouchableOpacity
+              style={[styles.themeOption, themeMode === 'light' && styles.themeOptionSelected]}
+              onPress={() => setThemeMode('light')}
+            >
+              <Sun size={20} color={themeMode === 'light' ? '#10b981' : '#6b7280'} />
+              <Text style={[styles.themeOptionText, themeMode === 'light' && styles.themeOptionTextSelected]}>
+                Light
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.themeOption, themeMode === 'dark' && styles.themeOptionSelected]}
+              onPress={() => setThemeMode('dark')}
+            >
+              <Moon size={20} color={themeMode === 'dark' ? '#10b981' : '#6b7280'} />
+              <Text style={[styles.themeOptionText, themeMode === 'dark' && styles.themeOptionTextSelected]}>
+                Dark
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.themeOption, themeMode === 'system' && styles.themeOptionSelected]}
+              onPress={() => setThemeMode('system')}
+            >
+              <Monitor size={20} color={themeMode === 'system' ? '#10b981' : '#6b7280'} />
+              <Text style={[styles.themeOptionText, themeMode === 'system' && styles.themeOptionTextSelected]}>
+                System
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={[styles.settingsCard, { marginTop: 16 }]}>
           <View style={styles.settingRow}>
             <Bell size={20} color="#6b7280" />
             <Text style={styles.settingLabel}>Notifications</Text>
@@ -490,5 +531,33 @@ const styles = StyleSheet.create({
   settingSubLabel: {
     fontSize: 14,
     color: '#6b7280',
+  },
+  themeOptions: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingTop: 8,
+  },
+  themeOption: {
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    backgroundColor: '#f9fafb',
+  },
+  themeOptionSelected: {
+    borderColor: '#10b981',
+    backgroundColor: '#f0fdf4',
+  },
+  themeOptionText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6b7280',
+    marginTop: 6,
+  },
+  themeOptionTextSelected: {
+    color: '#10b981',
   },
 });
