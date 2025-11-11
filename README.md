@@ -264,6 +264,18 @@ The CI workflow runs on every push to `main` and `develop` as well as on all pul
 1. **Lint, Format, and Type Check** - Validates code quality, formatting, and TypeScript types
 2. **Build** - Creates production web build
 
+### Claude Code Review
+
+Pull requests automatically trigger an AI-powered code review workflow that:
+
+- 🔄 **Updates in real-time** - Uses a sticky comment that tracks review progress
+- ⚡ **Cancels outdated reviews** - New commits automatically cancel previous reviews
+- 🔍 **Comprehensive analysis** - Checks TypeScript types, ESLint rules, and Prettier formatting
+- 🤖 **AI insights** - Detects common issues like `any` types, console.logs, and TODO comments
+- 📊 **Quality report** - Provides detailed pass/fail status for all checks
+
+The review comment updates throughout the process, showing progress from "in progress" to final results with actionable recommendations.
+
 ### GitHub Secrets Required
 
 For the build job to work, configure these secrets in your GitHub repository settings:
@@ -283,8 +295,10 @@ For the build job to work, configure these secrets in your GitHub repository set
 
 - `CLAUDE.md` - Detailed project architecture and code patterns
 - `GOOGLE_OAUTH_SETUP.md` - Google OAuth configuration guide
+- `.github/CICD.md` - Comprehensive CI/CD documentation including Claude Code Review
 - `supabase/migrations/` - Database schema and RLS policies
-- `.github/workflows/ci.yml` - CI/CD pipeline configuration
+- `.github/workflows/ci.yml` - Main CI/CD pipeline configuration
+- `.github/workflows/claude-code-review.yml` - AI code review workflow configuration
 
 ## License
 
