@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -51,9 +51,7 @@ export default function ProfileScreen() {
     daily: profile?.notification_preferences?.daily ?? true,
   });
   const [showSobrietyDatePicker, setShowSobrietyDatePicker] = useState(false);
-  const [selectedSobrietyDate, setSelectedSobrietyDate] = useState<Date>(
-    new Date(),
-  );
+  const [selectedSobrietyDate, setSelectedSobrietyDate] = useState<Date>(new Date());
   const [showSlipUpModal, setShowSlipUpModal] = useState(false);
   const [slipUpDate, setSlipUpDate] = useState<Date>(new Date());
   const [recoveryDate, setRecoveryDate] = useState<Date>(new Date());
@@ -65,7 +63,7 @@ export default function ProfileScreen() {
     [key: string]: { total: number; completed: number };
   }>({});
 
-  const fetchRelationships = async () => {
+  const fetchRelationships = useCallback(async () => {
     if (!profile) return;
 
     setLoadingRelationships(true);
@@ -90,20 +88,28 @@ export default function ProfileScreen() {
         asSponsor &&
         asSponsor.length > 0
       ) {
-        const stats: { [key: string]: { total: number; completed: number } } =
-          {};
+        // Batch fetch all task stats in a single query instead of N+1 queries
+        const sponseeIds = asSponsor.map(rel => rel.sponsee_id);
+        const { data: allTasks } = await supabase
+          .from('tasks')
+          .select('sponsee_id, status')
+          .in('sponsee_id', sponseeIds);
 
-        for (const rel of asSponsor) {
-          const { data: tasks } = await supabase
-            .from('tasks')
-            .select('status')
-            .eq('sponsee_id', rel.sponsee_id);
+        // Group tasks by sponsee_id
+        const stats: { [key: string]: { total: number; completed: number } } = {};
 
-          const total = tasks?.length || 0;
-          const completed =
-            tasks?.filter((t) => t.status === 'completed').length || 0;
-          stats[rel.sponsee_id] = { total, completed };
-        }
+        sponseeIds.forEach(id => {
+          stats[id] = { total: 0, completed: 0 };
+        });
+
+        allTasks?.forEach(task => {
+          if (stats[task.sponsee_id]) {
+            stats[task.sponsee_id].total++;
+            if (task.status === 'completed') {
+              stats[task.sponsee_id].completed++;
+            }
+          }
+        });
 
         setSponseeTaskStats(stats);
       }
@@ -112,21 +118,21 @@ export default function ProfileScreen() {
     } finally {
       setLoadingRelationships(false);
     }
-  };
+  }, [profile]);
 
   useEffect(() => {
     fetchRelationships();
-  }, [profile]);
+  }, [fetchRelationships]);
 
-  const getDaysSober = () => {
+  const getDaysSober = useCallback(() => {
     if (!profile?.sobriety_date) return 0;
     const sobrietyDate = new Date(profile.sobriety_date);
     const today = new Date();
     const diff = today.getTime() - sobrietyDate.getTime();
     return Math.floor(diff / (1000 * 60 * 60 * 24));
-  };
+  }, [profile?.sobriety_date]);
 
-  const generateInviteCode = async () => {
+  const generateInviteCode = useCallback(async () => {
     if (!profile) return;
 
     const code = Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -148,7 +154,7 @@ export default function ProfileScreen() {
     } else {
       if (Platform.OS === 'web') {
         const shouldShare = window.confirm(
-          `Your invite code is: ${code}\n\nShare this with your sponsee to connect.\n\nClick OK to copy to clipboard.`,
+          `Your invite code is: ${code}\n\nShare this with your sponsee to connect.\n\nClick OK to copy to clipboard.`
         );
         if (shouldShare) {
           navigator.clipboard.writeText(code);
@@ -167,13 +173,13 @@ export default function ProfileScreen() {
                 }),
             },
             { text: 'OK' },
-          ],
+          ]
         );
       }
     }
-  };
+  }, [profile]);
 
-  const joinWithInviteCode = async () => {
+  const joinWithInviteCode = useCallback(async () => {
     if (!inviteCode.trim() || !profile) return;
 
     const trimmedCode = inviteCode.trim().toUpperCase();
@@ -283,8 +289,7 @@ export default function ProfileScreen() {
       if (relationshipError) {
         console.error('Relationship creation error:', relationshipError);
         const errorMessage =
-          relationshipError.message ||
-          'Failed to connect with sponsor. Please try again.';
+          relationshipError.message || 'Failed to connect with sponsor. Please try again.';
         if (Platform.OS === 'web') {
           window.alert(`Failed to connect: ${errorMessage}`);
         } else {
@@ -323,13 +328,11 @@ export default function ProfileScreen() {
       await fetchRelationships();
 
       if (Platform.OS === 'web') {
-        window.alert(
-          `Connected with ${sponsorProfile.first_name} ${sponsorProfile.last_initial}.`,
-        );
+        window.alert(`Connected with ${sponsorProfile.first_name} ${sponsorProfile.last_initial}.`);
       } else {
         Alert.alert(
           'Success',
-          `Connected with ${sponsorProfile.first_name} ${sponsorProfile.last_initial}.`,
+          `Connected with ${sponsorProfile.first_name} ${sponsorProfile.last_initial}.`
         );
       }
 
@@ -338,193 +341,193 @@ export default function ProfileScreen() {
     } catch (error: any) {
       console.error('Error joining with invite code:', error);
       if (Platform.OS === 'web') {
-        window.alert(
-          'Network error. Please check your connection and try again.',
-        );
+        window.alert('Network error. Please check your connection and try again.');
       } else {
-        Alert.alert(
-          'Error',
-          'Network error. Please check your connection and try again.',
-        );
+        Alert.alert('Error', 'Network error. Please check your connection and try again.');
       }
     } finally {
       setIsConnecting(false);
     }
-  };
+  }, [inviteCode, profile, fetchRelationships]);
 
-  const updateNotificationSetting = async (key: string, value: boolean) => {
-    if (!profile) return;
+  const updateNotificationSetting = useCallback(
+    async (key: string, value: boolean) => {
+      if (!profile) return;
 
-    const newSettings = { ...notificationSettings, [key]: value };
-    setNotificationSettings(newSettings);
+      const newSettings = { ...notificationSettings, [key]: value };
+      setNotificationSettings(newSettings);
 
-    const { error } = await supabase
-      .from('profiles')
-      .update({ notification_preferences: newSettings })
-      .eq('id', profile.id);
-
-    if (error) {
-      Alert.alert('Error', 'Failed to update notification settings');
-      setNotificationSettings(notificationSettings);
-    } else {
-      await refreshProfile();
-    }
-  };
-
-  const disconnectRelationship = async (
-    relationshipId: string,
-    isSponsor: boolean,
-    otherUserName: string,
-  ) => {
-    const confirmMessage = isSponsor
-      ? `Are you sure you want to disconnect from ${otherUserName}? This will end your sponsee relationship.`
-      : `Are you sure you want to disconnect from ${otherUserName}? This will end your sponsor relationship.`;
-
-    const confirmed =
-      Platform.OS === 'web'
-        ? window.confirm(confirmMessage)
-        : await new Promise<boolean>((resolve) => {
-            Alert.alert('Confirm Disconnection', confirmMessage, [
-              {
-                text: 'Cancel',
-                style: 'cancel',
-                onPress: () => resolve(false),
-              },
-              {
-                text: 'Disconnect',
-                style: 'destructive',
-                onPress: () => resolve(true),
-              },
-            ]);
-          });
-
-    if (!confirmed) return;
-
-    try {
       const { error } = await supabase
-        .from('sponsor_sponsee_relationships')
-        .update({
-          status: 'inactive',
-          disconnected_at: new Date().toISOString(),
-        })
-        .eq('id', relationshipId);
+        .from('profiles')
+        .update({ notification_preferences: newSettings })
+        .eq('id', profile.id);
 
-      if (error) throw error;
-
-      const relationship = isSponsor
-        ? sponseeRelationships.find((r) => r.id === relationshipId)
-        : sponsorRelationships.find((r) => r.id === relationshipId);
-
-      if (relationship) {
-        const notificationRecipientId = isSponsor
-          ? relationship.sponsee_id
-          : relationship.sponsor_id;
-        const notificationSenderName = `${profile?.first_name} ${profile?.last_initial}.`;
-
-        await supabase.from('notifications').insert([
-          {
-            user_id: notificationRecipientId,
-            type: 'connection_request',
-            title: 'Relationship Ended',
-            content: `${notificationSenderName} has ended the ${isSponsor ? 'sponsorship' : 'sponsee'} relationship.`,
-            data: { relationship_id: relationshipId },
-          },
-        ]);
-      }
-
-      await fetchRelationships();
-
-      if (Platform.OS === 'web') {
-        window.alert('Successfully disconnected');
+      if (error) {
+        Alert.alert('Error', 'Failed to update notification settings');
+        setNotificationSettings(notificationSettings);
       } else {
-        Alert.alert('Success', 'Successfully disconnected');
+        await refreshProfile();
       }
-    } catch (error: any) {
-      console.error('Error disconnecting:', error);
-      if (Platform.OS === 'web') {
-        window.alert('Failed to disconnect. Please try again.');
-      } else {
-        Alert.alert('Error', 'Failed to disconnect. Please try again.');
-      }
-    }
-  };
+    },
+    [profile, notificationSettings, refreshProfile]
+  );
 
-  const handleEditSobrietyDate = () => {
+  const disconnectRelationship = useCallback(
+    async (relationshipId: string, isSponsor: boolean, otherUserName: string) => {
+      const confirmMessage = isSponsor
+        ? `Are you sure you want to disconnect from ${otherUserName}? This will end your sponsee relationship.`
+        : `Are you sure you want to disconnect from ${otherUserName}? This will end your sponsor relationship.`;
+
+      const confirmed =
+        Platform.OS === 'web'
+          ? window.confirm(confirmMessage)
+          : await new Promise<boolean>(resolve => {
+              Alert.alert('Confirm Disconnection', confirmMessage, [
+                {
+                  text: 'Cancel',
+                  style: 'cancel',
+                  onPress: () => resolve(false),
+                },
+                {
+                  text: 'Disconnect',
+                  style: 'destructive',
+                  onPress: () => resolve(true),
+                },
+              ]);
+            });
+
+      if (!confirmed) return;
+
+      try {
+        const { error } = await supabase
+          .from('sponsor_sponsee_relationships')
+          .update({
+            status: 'inactive',
+            disconnected_at: new Date().toISOString(),
+          })
+          .eq('id', relationshipId);
+
+        if (error) throw error;
+
+        const relationship = isSponsor
+          ? sponseeRelationships.find(r => r.id === relationshipId)
+          : sponsorRelationships.find(r => r.id === relationshipId);
+
+        if (relationship) {
+          const notificationRecipientId = isSponsor
+            ? relationship.sponsee_id
+            : relationship.sponsor_id;
+          const notificationSenderName = `${profile?.first_name} ${profile?.last_initial}.`;
+
+          await supabase.from('notifications').insert([
+            {
+              user_id: notificationRecipientId,
+              type: 'connection_request',
+              title: 'Relationship Ended',
+              content: `${notificationSenderName} has ended the ${isSponsor ? 'sponsorship' : 'sponsee'} relationship.`,
+              data: { relationship_id: relationshipId },
+            },
+          ]);
+        }
+
+        await fetchRelationships();
+
+        if (Platform.OS === 'web') {
+          window.alert('Successfully disconnected');
+        } else {
+          Alert.alert('Success', 'Successfully disconnected');
+        }
+      } catch (error: any) {
+        console.error('Error disconnecting:', error);
+        if (Platform.OS === 'web') {
+          window.alert('Failed to disconnect. Please try again.');
+        } else {
+          Alert.alert('Error', 'Failed to disconnect. Please try again.');
+        }
+      }
+    },
+    [sponseeRelationships, sponsorRelationships, profile, fetchRelationships]
+  );
+
+  const handleEditSobrietyDate = useCallback(() => {
     if (profile?.sobriety_date) {
       setSelectedSobrietyDate(new Date(profile.sobriety_date));
     }
     setShowSobrietyDatePicker(true);
-  };
+  }, [profile?.sobriety_date]);
 
-  const updateSobrietyDate = async (newDate: Date) => {
-    if (!profile) return;
+  const updateSobrietyDate = useCallback(
+    async (newDate: Date) => {
+      if (!profile) return;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const selectedDate = new Date(newDate);
-    selectedDate.setHours(0, 0, 0, 0);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDate = new Date(newDate);
+      selectedDate.setHours(0, 0, 0, 0);
 
-    if (selectedDate > today) {
-      if (Platform.OS === 'web') {
-        window.alert('Sobriety date cannot be in the future');
-      } else {
-        Alert.alert('Invalid Date', 'Sobriety date cannot be in the future');
+      if (selectedDate > today) {
+        if (Platform.OS === 'web') {
+          window.alert('Sobriety date cannot be in the future');
+        } else {
+          Alert.alert('Invalid Date', 'Sobriety date cannot be in the future');
+        }
+        return;
       }
-      return;
-    }
 
-    const confirmMessage = `Update your sobriety date to ${newDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}?`;
+      const confirmMessage = `Update your sobriety date to ${newDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}?`;
 
-    const confirmed =
-      Platform.OS === 'web'
-        ? window.confirm(confirmMessage)
-        : await new Promise<boolean>((resolve) => {
-            Alert.alert('Confirm Date Change', confirmMessage, [
-              {
-                text: 'Cancel',
-                style: 'cancel',
-                onPress: () => resolve(false),
-              },
-              { text: 'Update', onPress: () => resolve(true) },
-            ]);
-          });
+      const confirmed =
+        Platform.OS === 'web'
+          ? window.confirm(confirmMessage)
+          : await new Promise<boolean>(resolve => {
+              Alert.alert('Confirm Date Change', confirmMessage, [
+                {
+                  text: 'Cancel',
+                  style: 'cancel',
+                  onPress: () => resolve(false),
+                },
+                { text: 'Update', onPress: () => resolve(true) },
+              ]);
+            });
 
-    if (!confirmed) return;
+      if (!confirmed) return;
 
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ sobriety_date: newDate.toISOString().split('T')[0] })
-        .eq('id', profile.id);
+      try {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ sobriety_date: newDate.toISOString().split('T')[0] })
+          .eq('id', profile.id);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      await refreshProfile();
+        await refreshProfile();
 
-      if (Platform.OS === 'web') {
-        window.alert('Sobriety date updated successfully');
-      } else {
-        Alert.alert('Success', 'Sobriety date updated successfully');
+        if (Platform.OS === 'web') {
+          window.alert('Sobriety date updated successfully');
+        } else {
+          Alert.alert('Success', 'Sobriety date updated successfully');
+        }
+      } catch (error: any) {
+        console.error('Error updating sobriety date:', error);
+        if (Platform.OS === 'web') {
+          window.alert('Failed to update sobriety date');
+        } else {
+          Alert.alert('Error', 'Failed to update sobriety date');
+        }
       }
-    } catch (error: any) {
-      console.error('Error updating sobriety date:', error);
-      if (Platform.OS === 'web') {
-        window.alert('Failed to update sobriety date');
-      } else {
-        Alert.alert('Error', 'Failed to update sobriety date');
-      }
-    }
-  };
+    },
+    [profile, refreshProfile]
+  );
 
-  const handleLogSlipUp = () => {
+  const handleLogSlipUp = useCallback(() => {
     const today = new Date();
     setSlipUpDate(today);
     setRecoveryDate(today);
     setSlipUpNotes('');
     setShowSlipUpModal(true);
-  };
+  }, []);
 
-  const submitSlipUp = async () => {
+  const submitSlipUp = useCallback(async () => {
     if (!profile) return;
 
     const today = new Date();
@@ -541,14 +544,9 @@ export default function ProfileScreen() {
 
     if (recoveryDate < slipUpDate) {
       if (Platform.OS === 'web') {
-        window.alert(
-          'Recovery restart date must be on or after the slip up date',
-        );
+        window.alert('Recovery restart date must be on or after the slip up date');
       } else {
-        Alert.alert(
-          'Invalid Date',
-          'Recovery restart date must be on or after the slip up date',
-        );
+        Alert.alert('Invalid Date', 'Recovery restart date must be on or after the slip up date');
       }
       return;
     }
@@ -559,7 +557,7 @@ export default function ProfileScreen() {
     const confirmed =
       Platform.OS === 'web'
         ? window.confirm(confirmMessage)
-        : await new Promise<boolean>((resolve) => {
+        : await new Promise<boolean>(resolve => {
             Alert.alert('Confirm Slip Up Log', confirmMessage, [
               {
                 text: 'Cancel',
@@ -602,7 +600,7 @@ export default function ProfileScreen() {
         .eq('status', 'active');
 
       if (sponsors && sponsors.length > 0) {
-        const notifications = sponsors.map((rel) => ({
+        const notifications = sponsors.map(rel => ({
           user_id: rel.sponsor_id,
           type: 'milestone',
           title: 'Sponsee Slip Up',
@@ -621,12 +619,12 @@ export default function ProfileScreen() {
 
       if (Platform.OS === 'web') {
         window.alert(
-          'Your slip up has been logged. Remember, recovery is a journey. You are brave for being honest. Keep moving forward, one day at a time.',
+          'Your slip up has been logged. Remember, recovery is a journey. You are brave for being honest. Keep moving forward, one day at a time.'
         );
       } else {
         Alert.alert(
           'Slip Up Logged',
-          'Your slip up has been logged. Remember, recovery is a journey. You are brave for being honest. Keep moving forward, one day at a time.',
+          'Your slip up has been logged. Remember, recovery is a journey. You are brave for being honest. Keep moving forward, one day at a time.'
         );
       }
     } catch (error: any) {
@@ -639,9 +637,9 @@ export default function ProfileScreen() {
     } finally {
       setIsLoggingSlipUp(false);
     }
-  };
+  }, [slipUpDate, recoveryDate, slipUpNotes, profile, refreshProfile]);
 
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
     if (Platform.OS === 'web') {
       const confirmed = window.confirm('Are you sure you want to sign out?');
       if (confirmed) {
@@ -667,17 +665,15 @@ export default function ProfileScreen() {
         },
       ]);
     }
-  };
+  }, [signOut]);
 
-  const styles = createStyles(theme);
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {profile?.first_name?.[0]?.toUpperCase() || '?'}
-          </Text>
+          <Text style={styles.avatarText}>{profile?.first_name?.[0]?.toUpperCase() || '?'}</Text>
         </View>
         <Text style={styles.name}>
           {profile?.first_name} {profile?.last_initial}.
@@ -694,15 +690,13 @@ export default function ProfileScreen() {
         <View style={styles.sobrietyDateContainer}>
           <Text style={styles.sobrietyDate}>
             Since{' '}
-            {new Date(profile?.sobriety_date || '').toLocaleDateString(
-              'en-US',
-              { month: 'long', day: 'numeric', year: 'numeric' },
-            )}
+            {new Date(profile?.sobriety_date || '').toLocaleDateString('en-US', {
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric',
+            })}
           </Text>
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={handleEditSobrietyDate}
-          >
+          <TouchableOpacity style={styles.editButton} onPress={handleEditSobrietyDate}>
             <Edit2 size={16} color={theme.primary} />
           </TouchableOpacity>
         </View>
@@ -720,12 +714,11 @@ export default function ProfileScreen() {
           </View>
         ) : sponseeRelationships.length > 0 ? (
           <>
-            {sponseeRelationships.map((rel) => {
+            {sponseeRelationships.map(rel => {
               const daysSober = rel.sponsee?.sobriety_date
                 ? Math.floor(
-                    (new Date().getTime() -
-                      new Date(rel.sponsee.sobriety_date).getTime()) /
-                      (1000 * 60 * 60 * 24),
+                    (new Date().getTime() - new Date(rel.sponsee.sobriety_date).getTime()) /
+                      (1000 * 60 * 60 * 24)
                   )
                 : 0;
               return (
@@ -741,19 +734,12 @@ export default function ProfileScreen() {
                         {rel.sponsee?.first_name} {rel.sponsee?.last_initial}.
                       </Text>
                       <Text style={styles.relationshipMeta}>
-                        Connected{' '}
-                        {new Date(rel.connected_at).toLocaleDateString()}
+                        Connected {new Date(rel.connected_at).toLocaleDateString()}
                       </Text>
                       {rel.sponsee?.sobriety_date && (
                         <View style={styles.sobrietyInfo}>
-                          <Heart
-                            size={14}
-                            color={theme.primary}
-                            fill={theme.primary}
-                          />
-                          <Text style={styles.sobrietyText}>
-                            {daysSober} days sober
-                          </Text>
+                          <Heart size={14} color={theme.primary} fill={theme.primary} />
+                          <Text style={styles.sobrietyText}>{daysSober} days sober</Text>
                         </View>
                       )}
                       {sponseeTaskStats[rel.sponsee_id] && (
@@ -761,8 +747,7 @@ export default function ProfileScreen() {
                           <CheckCircle size={14} color="#10b981" />
                           <Text style={styles.taskStatsText}>
                             {sponseeTaskStats[rel.sponsee_id].completed}/
-                            {sponseeTaskStats[rel.sponsee_id].total} tasks
-                            completed
+                            {sponseeTaskStats[rel.sponsee_id].total} tasks completed
                           </Text>
                         </View>
                       )}
@@ -774,7 +759,7 @@ export default function ProfileScreen() {
                       disconnectRelationship(
                         rel.id,
                         true,
-                        `${rel.sponsee?.first_name} ${rel.sponsee?.last_initial}.`,
+                        `${rel.sponsee?.first_name} ${rel.sponsee?.last_initial}.`
                       )
                     }
                   >
@@ -784,14 +769,9 @@ export default function ProfileScreen() {
                 </View>
               );
             })}
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={generateInviteCode}
-            >
+            <TouchableOpacity style={styles.actionButton} onPress={generateInviteCode}>
               <Share2 size={20} color={theme.primary} />
-              <Text style={styles.actionButtonText}>
-                Generate New Invite Code
-              </Text>
+              <Text style={styles.actionButtonText}>Generate New Invite Code</Text>
             </TouchableOpacity>
           </>
         ) : (
@@ -799,10 +779,7 @@ export default function ProfileScreen() {
             <Text style={styles.emptyStateText}>
               No sponsees yet. Generate an invite code to get started.
             </Text>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={generateInviteCode}
-            >
+            <TouchableOpacity style={styles.actionButton} onPress={generateInviteCode}>
               <Share2 size={20} color={theme.primary} />
               <Text style={styles.actionButtonText}>Generate Invite Code</Text>
             </TouchableOpacity>
@@ -817,12 +794,11 @@ export default function ProfileScreen() {
             <ActivityIndicator size="small" color={theme.primary} />
           </View>
         ) : sponsorRelationships.length > 0 ? (
-          sponsorRelationships.map((rel) => {
+          sponsorRelationships.map(rel => {
             const daysSober = rel.sponsor?.sobriety_date
               ? Math.floor(
-                  (new Date().getTime() -
-                    new Date(rel.sponsor.sobriety_date).getTime()) /
-                    (1000 * 60 * 60 * 24),
+                  (new Date().getTime() - new Date(rel.sponsor.sobriety_date).getTime()) /
+                    (1000 * 60 * 60 * 24)
                 )
               : 0;
             return (
@@ -838,19 +814,12 @@ export default function ProfileScreen() {
                       {rel.sponsor?.first_name} {rel.sponsor?.last_initial}.
                     </Text>
                     <Text style={styles.relationshipMeta}>
-                      Connected{' '}
-                      {new Date(rel.connected_at).toLocaleDateString()}
+                      Connected {new Date(rel.connected_at).toLocaleDateString()}
                     </Text>
                     {rel.sponsor?.sobriety_date && (
                       <View style={styles.sobrietyInfo}>
-                        <Heart
-                          size={14}
-                          color={theme.primary}
-                          fill={theme.primary}
-                        />
-                        <Text style={styles.sobrietyText}>
-                          {daysSober} days sober
-                        </Text>
+                        <Heart size={14} color={theme.primary} fill={theme.primary} />
+                        <Text style={styles.sobrietyText}>{daysSober} days sober</Text>
                       </View>
                     )}
                   </View>
@@ -861,7 +830,7 @@ export default function ProfileScreen() {
                     disconnectRelationship(
                       rel.id,
                       false,
-                      `${rel.sponsor?.first_name} ${rel.sponsor?.last_initial}.`,
+                      `${rel.sponsor?.first_name} ${rel.sponsor?.last_initial}.`
                     )
                   }
                 >
@@ -895,10 +864,7 @@ export default function ProfileScreen() {
                   editable={!isConnecting}
                 />
                 <TouchableOpacity
-                  style={[
-                    styles.inviteSubmitButton,
-                    isConnecting && styles.buttonDisabled,
-                  ]}
+                  style={[styles.inviteSubmitButton, isConnecting && styles.buttonDisabled]}
                   onPress={joinWithInviteCode}
                   disabled={isConnecting}
                 >
@@ -926,14 +892,9 @@ export default function ProfileScreen() {
 
       {sponsorRelationships.length > 0 && !showInviteInput && (
         <View style={styles.section}>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => setShowInviteInput(true)}
-          >
+          <TouchableOpacity style={styles.actionButton} onPress={() => setShowInviteInput(true)}>
             <QrCode size={20} color={theme.primary} />
-            <Text style={styles.actionButtonText}>
-              Connect to Another Sponsor
-            </Text>
+            <Text style={styles.actionButtonText}>Connect to Another Sponsor</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -949,18 +910,10 @@ export default function ProfileScreen() {
 
           <View style={styles.themeOptions}>
             <TouchableOpacity
-              style={[
-                styles.themeOption,
-                themeMode === 'light' && styles.themeOptionSelected,
-              ]}
+              style={[styles.themeOption, themeMode === 'light' && styles.themeOptionSelected]}
               onPress={() => setThemeMode('light')}
             >
-              <Sun
-                size={20}
-                color={
-                  themeMode === 'light' ? theme.primary : theme.textSecondary
-                }
-              />
+              <Sun size={20} color={themeMode === 'light' ? theme.primary : theme.textSecondary} />
               <Text
                 style={[
                   styles.themeOptionText,
@@ -972,18 +925,10 @@ export default function ProfileScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.themeOption,
-                themeMode === 'dark' && styles.themeOptionSelected,
-              ]}
+              style={[styles.themeOption, themeMode === 'dark' && styles.themeOptionSelected]}
               onPress={() => setThemeMode('dark')}
             >
-              <Moon
-                size={20}
-                color={
-                  themeMode === 'dark' ? theme.primary : theme.textSecondary
-                }
-              />
+              <Moon size={20} color={themeMode === 'dark' ? theme.primary : theme.textSecondary} />
               <Text
                 style={[
                   styles.themeOptionText,
@@ -995,17 +940,12 @@ export default function ProfileScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.themeOption,
-                themeMode === 'system' && styles.themeOptionSelected,
-              ]}
+              style={[styles.themeOption, themeMode === 'system' && styles.themeOptionSelected]}
               onPress={() => setThemeMode('system')}
             >
               <Monitor
                 size={20}
-                color={
-                  themeMode === 'system' ? theme.primary : theme.textSecondary
-                }
+                color={themeMode === 'system' ? theme.primary : theme.textSecondary}
               />
               <Text
                 style={[
@@ -1029,13 +969,9 @@ export default function ProfileScreen() {
             <Text style={styles.settingSubLabel}>Task assignments</Text>
             <Switch
               value={notificationSettings.tasks}
-              onValueChange={(value) =>
-                updateNotificationSetting('tasks', value)
-              }
+              onValueChange={value => updateNotificationSetting('tasks', value)}
               trackColor={{ false: '#d1d5db', true: '#80c0ff' }}
-              thumbColor={
-                notificationSettings.tasks ? theme.primary : '#f3f4f6'
-              }
+              thumbColor={notificationSettings.tasks ? theme.primary : '#f3f4f6'}
             />
           </View>
 
@@ -1043,13 +979,9 @@ export default function ProfileScreen() {
             <Text style={styles.settingSubLabel}>Messages</Text>
             <Switch
               value={notificationSettings.messages}
-              onValueChange={(value) =>
-                updateNotificationSetting('messages', value)
-              }
+              onValueChange={value => updateNotificationSetting('messages', value)}
               trackColor={{ false: '#d1d5db', true: '#80c0ff' }}
-              thumbColor={
-                notificationSettings.messages ? theme.primary : '#f3f4f6'
-              }
+              thumbColor={notificationSettings.messages ? theme.primary : '#f3f4f6'}
             />
           </View>
 
@@ -1057,13 +989,9 @@ export default function ProfileScreen() {
             <Text style={styles.settingSubLabel}>Milestones</Text>
             <Switch
               value={notificationSettings.milestones}
-              onValueChange={(value) =>
-                updateNotificationSetting('milestones', value)
-              }
+              onValueChange={value => updateNotificationSetting('milestones', value)}
               trackColor={{ false: '#d1d5db', true: '#80c0ff' }}
-              thumbColor={
-                notificationSettings.milestones ? theme.primary : '#f3f4f6'
-              }
+              thumbColor={notificationSettings.milestones ? theme.primary : '#f3f4f6'}
             />
           </View>
 
@@ -1071,13 +999,9 @@ export default function ProfileScreen() {
             <Text style={styles.settingSubLabel}>Daily reminders</Text>
             <Switch
               value={notificationSettings.daily}
-              onValueChange={(value) =>
-                updateNotificationSetting('daily', value)
-              }
+              onValueChange={value => updateNotificationSetting('daily', value)}
               trackColor={{ false: '#d1d5db', true: '#80c0ff' }}
-              thumbColor={
-                notificationSettings.daily ? theme.primary : '#f3f4f6'
-              }
+              thumbColor={notificationSettings.daily ? theme.primary : '#f3f4f6'}
             />
           </View>
         </View>
@@ -1092,25 +1016,15 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>
-          12-Step Tracker v{packageJson.version}
-        </Text>
-        <Text style={styles.footerSubtext}>
-          Supporting recovery, one day at a time
-        </Text>
-        <TouchableOpacity
-          onPress={() => Linking.openURL('https://billchirico.dev')}
-        >
+        <Text style={styles.footerText}>12-Step Tracker v{packageJson.version}</Text>
+        <Text style={styles.footerSubtext}>Supporting recovery, one day at a time</Text>
+        <TouchableOpacity onPress={() => Linking.openURL('https://billchirico.dev')}>
           <Text style={styles.footerCredit}>By Bill Chirico</Text>
         </TouchableOpacity>
       </View>
 
       {Platform.OS === 'web' && showSobrietyDatePicker && (
-        <Modal
-          visible={showSobrietyDatePicker}
-          transparent
-          animationType="fade"
-        >
+        <Modal visible={showSobrietyDatePicker} transparent animationType="fade">
           <View style={styles.modalOverlay}>
             <View style={styles.datePickerModal}>
               <Text style={styles.modalTitle}>Edit Sobriety Date</Text>
@@ -1118,9 +1032,7 @@ export default function ProfileScreen() {
                 type="date"
                 value={selectedSobrietyDate.toISOString().split('T')[0]}
                 max={new Date().toISOString().split('T')[0]}
-                onChange={(e) =>
-                  setSelectedSobrietyDate(new Date(e.target.value))
-                }
+                onChange={e => setSelectedSobrietyDate(new Date(e.target.value))}
                 style={{
                   padding: 12,
                   fontSize: 16,
@@ -1154,11 +1066,7 @@ export default function ProfileScreen() {
       )}
 
       {Platform.OS !== 'web' && showSobrietyDatePicker && (
-        <Modal
-          visible={showSobrietyDatePicker}
-          transparent
-          animationType="slide"
-        >
+        <Modal visible={showSobrietyDatePicker} transparent animationType="slide">
           <View style={styles.modalOverlay}>
             <View style={styles.datePickerModal}>
               <Text style={styles.modalTitle}>Edit Sobriety Date</Text>
@@ -1198,8 +1106,8 @@ export default function ProfileScreen() {
           <View style={styles.slipUpModal}>
             <Text style={styles.modalTitle}>Log a Slip Up</Text>
             <Text style={styles.modalSubtitle}>
-              Recovery is a journey, not a destination. Logging a slip up is an
-              act of courage and honesty.
+              Recovery is a journey, not a destination. Logging a slip up is an act of courage and
+              honesty.
             </Text>
 
             <View style={styles.dateSection}>
@@ -1209,7 +1117,7 @@ export default function ProfileScreen() {
                   type="date"
                   value={slipUpDate.toISOString().split('T')[0]}
                   max={new Date().toISOString().split('T')[0]}
-                  onChange={(e) => setSlipUpDate(new Date(e.target.value))}
+                  onChange={e => setSlipUpDate(new Date(e.target.value))}
                   style={{
                     padding: 12,
                     fontSize: 16,
@@ -1256,7 +1164,7 @@ export default function ProfileScreen() {
                   type="date"
                   value={recoveryDate.toISOString().split('T')[0]}
                   min={slipUpDate.toISOString().split('T')[0]}
-                  onChange={(e) => setRecoveryDate(new Date(e.target.value))}
+                  onChange={e => setRecoveryDate(new Date(e.target.value))}
                   style={{
                     padding: 12,
                     fontSize: 16,

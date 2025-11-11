@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -89,9 +89,7 @@ export const useTheme = () => {
   return context;
 };
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const systemColorScheme = useColorScheme();
   const [themeMode, setThemeModeState] = useState<ThemeMode>('system');
 
@@ -102,10 +100,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   const loadThemePreference = async () => {
     try {
       const saved = await AsyncStorage.getItem('theme_mode');
-      if (
-        saved &&
-        (saved === 'light' || saved === 'dark' || saved === 'system')
-      ) {
+      if (saved && (saved === 'light' || saved === 'dark' || saved === 'system')) {
         setThemeModeState(saved as ThemeMode);
       }
     } catch (error) {
@@ -122,28 +117,27 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const getEffectiveTheme = (): ThemeColors => {
+  const effectiveTheme = useMemo((): ThemeColors => {
     if (themeMode === 'system') {
       return systemColorScheme === 'dark' ? darkTheme : lightTheme;
     }
     return themeMode === 'dark' ? darkTheme : lightTheme;
-  };
+  }, [themeMode, systemColorScheme]);
 
-  const isDark =
-    themeMode === 'system'
-      ? systemColorScheme === 'dark'
-      : themeMode === 'dark';
-
-  return (
-    <ThemeContext.Provider
-      value={{
-        theme: getEffectiveTheme(),
-        themeMode,
-        setThemeMode,
-        isDark,
-      }}
-    >
-      {children}
-    </ThemeContext.Provider>
+  const isDark = useMemo(
+    () => (themeMode === 'system' ? systemColorScheme === 'dark' : themeMode === 'dark'),
+    [themeMode, systemColorScheme]
   );
+
+  const contextValue = useMemo(
+    () => ({
+      theme: effectiveTheme,
+      themeMode,
+      setThemeMode,
+      isDark,
+    }),
+    [effectiveTheme, themeMode, isDark]
+  );
+
+  return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;
 };

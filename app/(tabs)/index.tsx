@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -13,23 +13,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/lib/supabase';
 import { SponsorSponseeRelationship, Task, Profile } from '@/types/database';
-import {
-  Heart,
-  CheckCircle,
-  Users,
-  Award,
-  UserMinus,
-  Plus,
-} from 'lucide-react-native';
+import { Heart, CheckCircle, Users, Award, UserMinus, Plus , BookOpen, ClipboardList } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import TaskCreationModal from '@/components/TaskCreationModal';
+
 
 export default function HomeScreen() {
   const { profile } = useAuth();
   const { theme } = useTheme();
-  const [relationships, setRelationships] = useState<
-    SponsorSponseeRelationship[]
-  >([]);
+  const [relationships, setRelationships] = useState<SponsorSponseeRelationship[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -37,7 +29,7 @@ export default function HomeScreen() {
   const [sponseeProfiles, setSponseeProfiles] = useState<Profile[]>([]);
   const router = useRouter();
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!profile) return;
 
     const { data: asSponsor } = await supabase
@@ -53,9 +45,7 @@ export default function HomeScreen() {
       .eq('status', 'active');
 
     setRelationships([...(asSponsor || []), ...(asSponsee || [])]);
-    const profiles = (asSponsor || [])
-      .map((rel) => rel.sponsee)
-      .filter(Boolean) as Profile[];
+    const profiles = (asSponsor || []).map(rel => rel.sponsee).filter(Boolean) as Profile[];
     setSponseeProfiles(profiles);
 
     const { data: tasksData } = await supabase
@@ -66,102 +56,101 @@ export default function HomeScreen() {
       .order('created_at', { ascending: false })
       .limit(3);
     setTasks(tasksData || []);
-  };
+  }, [profile]);
 
   useEffect(() => {
     fetchData();
-  }, [profile]);
+  }, [fetchData]);
 
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await fetchData();
     setRefreshing(false);
-  };
+  }, [fetchData]);
 
-  const handleDisconnect = async (
-    relationshipId: string,
-    isSponsor: boolean,
-    otherUserName: string,
-  ) => {
-    const confirmMessage = isSponsor
-      ? `Disconnect from ${otherUserName}? This will end the sponsee relationship.`
-      : `Disconnect from ${otherUserName}? This will end the sponsor relationship.`;
+  const handleDisconnect = useCallback(
+    async (relationshipId: string, isSponsor: boolean, otherUserName: string) => {
+      const confirmMessage = isSponsor
+        ? `Disconnect from ${otherUserName}? This will end the sponsee relationship.`
+        : `Disconnect from ${otherUserName}? This will end the sponsor relationship.`;
 
-    const confirmed =
-      Platform.OS === 'web'
-        ? window.confirm(confirmMessage)
-        : await new Promise<boolean>((resolve) => {
-            Alert.alert('Confirm Disconnection', confirmMessage, [
-              {
-                text: 'Cancel',
-                style: 'cancel',
-                onPress: () => resolve(false),
-              },
-              {
-                text: 'Disconnect',
-                style: 'destructive',
-                onPress: () => resolve(true),
-              },
-            ]);
-          });
+      const confirmed =
+        Platform.OS === 'web'
+          ? window.confirm(confirmMessage)
+          : await new Promise<boolean>(resolve => {
+              Alert.alert('Confirm Disconnection', confirmMessage, [
+                {
+                  text: 'Cancel',
+                  style: 'cancel',
+                  onPress: () => resolve(false),
+                },
+                {
+                  text: 'Disconnect',
+                  style: 'destructive',
+                  onPress: () => resolve(true),
+                },
+              ]);
+            });
 
-    if (!confirmed) return;
+      if (!confirmed) return;
 
-    try {
-      const { error } = await supabase
-        .from('sponsor_sponsee_relationships')
-        .update({
-          status: 'inactive',
-          disconnected_at: new Date().toISOString(),
-        })
-        .eq('id', relationshipId);
+      try {
+        const { error } = await supabase
+          .from('sponsor_sponsee_relationships')
+          .update({
+            status: 'inactive',
+            disconnected_at: new Date().toISOString(),
+          })
+          .eq('id', relationshipId);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      const relationship = relationships.find((r) => r.id === relationshipId);
-      if (relationship && profile) {
-        const notificationRecipientId = isSponsor
-          ? relationship.sponsee_id
-          : relationship.sponsor_id;
-        const notificationSenderName = `${profile.first_name} ${profile.last_initial}.`;
+        const relationship = relationships.find(r => r.id === relationshipId);
+        if (relationship && profile) {
+          const notificationRecipientId = isSponsor
+            ? relationship.sponsee_id
+            : relationship.sponsor_id;
+          const notificationSenderName = `${profile.first_name} ${profile.last_initial}.`;
 
-        await supabase.from('notifications').insert([
-          {
-            user_id: notificationRecipientId,
-            type: 'connection_request',
-            title: 'Relationship Ended',
-            content: `${notificationSenderName} has ended the ${isSponsor ? 'sponsorship' : 'sponsee'} relationship.`,
-            data: { relationship_id: relationshipId },
-          },
-        ]);
+          await supabase.from('notifications').insert([
+            {
+              user_id: notificationRecipientId,
+              type: 'connection_request',
+              title: 'Relationship Ended',
+              content: `${notificationSenderName} has ended the ${isSponsor ? 'sponsorship' : 'sponsee'} relationship.`,
+              data: { relationship_id: relationshipId },
+            },
+          ]);
+        }
+
+        await fetchData();
+
+        if (Platform.OS === 'web') {
+          window.alert('Successfully disconnected');
+        } else {
+          Alert.alert('Success', 'Successfully disconnected');
+        }
+      } catch (error: any) {
+        console.error('Error disconnecting:', error);
+        if (Platform.OS === 'web') {
+          window.alert('Failed to disconnect. Please try again.');
+        } else {
+          Alert.alert('Error', 'Failed to disconnect. Please try again.');
+        }
       }
+    },
+    [relationships, profile, fetchData]
+  );
 
-      await fetchData();
-
-      if (Platform.OS === 'web') {
-        window.alert('Successfully disconnected');
-      } else {
-        Alert.alert('Success', 'Successfully disconnected');
-      }
-    } catch (error: any) {
-      console.error('Error disconnecting:', error);
-      if (Platform.OS === 'web') {
-        window.alert('Failed to disconnect. Please try again.');
-      } else {
-        Alert.alert('Error', 'Failed to disconnect. Please try again.');
-      }
-    }
-  };
-
-  const getDaysSober = () => {
+  const getDaysSober = useCallback(() => {
     if (!profile?.sobriety_date) return 0;
     const sobrietyDate = new Date(profile.sobriety_date);
     const today = new Date();
     const diff = today.getTime() - sobrietyDate.getTime();
     return Math.floor(diff / (1000 * 60 * 60 * 24));
-  };
+  }, [profile?.sobriety_date]);
 
-  const getMilestone = (days: number) => {
+  const getMilestone = useCallback((days: number) => {
     if (days >= 365)
       return {
         text: `${Math.floor(days / 365)} Year${Math.floor(days / 365) > 1 ? 's' : ''}`,
@@ -173,27 +162,21 @@ export default function HomeScreen() {
     if (days >= 7) return { text: '1 Week', color: '#007AFF' };
     if (days >= 1) return { text: '24 Hours', color: '#007AFF' };
     return { text: '< 24 Hours', color: '#6b7280' };
-  };
+  }, []);
 
-  const daysSober = getDaysSober();
-  const milestone = getMilestone(daysSober);
-  const styles = createStyles(theme);
+  const daysSober = useMemo(() => getDaysSober(), [getDaysSober]);
+  const milestone = useMemo(() => getMilestone(daysSober), [getMilestone, daysSober]);
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   return (
     <ScrollView
       style={styles.container}
       refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={theme.primary}
-        />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
       }
     >
       <View style={styles.header}>
-        <Text style={styles.greeting}>
-          Hello, {profile?.first_name || 'Friend'}
-        </Text>
+        <Text style={styles.greeting}>Hello, {profile?.first_name || 'Friend'}</Text>
         <Text style={styles.date}>
           {new Date().toLocaleDateString('en-US', {
             weekday: 'long',
@@ -210,38 +193,33 @@ export default function HomeScreen() {
             <Text style={styles.sobrietyTitle}>Your Sobriety Journey</Text>
             <Text style={styles.sobrietyDate}>
               Since{' '}
-              {new Date(profile?.sobriety_date || '').toLocaleDateString(
-                'en-US',
-                { month: 'long', day: 'numeric', year: 'numeric' },
-              )}
+              {new Date(profile?.sobriety_date || '').toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })}
             </Text>
           </View>
         </View>
         <View style={styles.daysSoberContainer}>
           <Text style={styles.daysSoberCount}>{daysSober}</Text>
           <Text style={styles.daysSoberLabel}>Days Sober</Text>
-          <View
-            style={[
-              styles.milestoneBadge,
-              { backgroundColor: milestone.color },
-            ]}
-          >
+          <View style={[styles.milestoneBadge, { backgroundColor: milestone.color }]}>
             <Award size={16} color="#ffffff" />
             <Text style={styles.milestoneText}>{milestone.text}</Text>
           </View>
         </View>
       </View>
 
-      {relationships.filter((rel) => rel.sponsor_id !== profile?.id).length >
-        0 && (
+      {relationships.filter(rel => rel.sponsor_id !== profile?.id).length > 0 && (
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <Users size={24} color={theme.textSecondary} />
             <Text style={styles.cardTitle}>Your Sponsor</Text>
           </View>
           {relationships
-            .filter((rel) => rel.sponsor_id !== profile?.id)
-            .map((rel) => (
+            .filter(rel => rel.sponsor_id !== profile?.id)
+            .map(rel => (
               <View key={rel.id} style={styles.relationshipItem}>
                 <View style={styles.avatar}>
                   <Text style={styles.avatarText}>
@@ -262,7 +240,7 @@ export default function HomeScreen() {
                     handleDisconnect(
                       rel.id,
                       false,
-                      `${rel.sponsor?.first_name} ${rel.sponsor?.last_initial}.`,
+                      `${rel.sponsor?.first_name} ${rel.sponsor?.last_initial}.`
                     )
                   }
                 >
@@ -278,15 +256,12 @@ export default function HomeScreen() {
           <Users size={24} color={theme.textSecondary} />
           <Text style={styles.cardTitle}>Your Sponsees</Text>
         </View>
-        {relationships.filter((rel) => rel.sponsor_id === profile?.id)
-          .length === 0 ? (
-          <Text style={styles.emptyText}>
-            No sponsees yet. Share your invite code to connect.
-          </Text>
+        {relationships.filter(rel => rel.sponsor_id === profile?.id).length === 0 ? (
+          <Text style={styles.emptyText}>No sponsees yet. Share your invite code to connect.</Text>
         ) : (
           relationships
-            .filter((rel) => rel.sponsor_id === profile?.id)
-            .map((rel) => (
+            .filter(rel => rel.sponsor_id === profile?.id)
+            .map(rel => (
               <View key={rel.id} style={styles.relationshipItem}>
                 <View style={styles.avatar}>
                   <Text style={styles.avatarText}>
@@ -316,7 +291,7 @@ export default function HomeScreen() {
                     handleDisconnect(
                       rel.id,
                       true,
-                      `${rel.sponsee?.first_name} ${rel.sponsee?.last_initial}.`,
+                      `${rel.sponsee?.first_name} ${rel.sponsee?.last_initial}.`
                     )
                   }
                 >
@@ -346,7 +321,7 @@ export default function HomeScreen() {
             <CheckCircle size={24} color={theme.textSecondary} />
             <Text style={styles.cardTitle}>Recent Tasks</Text>
           </View>
-          {tasks.map((task) => (
+          {tasks.map(task => (
             <TouchableOpacity
               key={task.id}
               style={styles.taskItem}
@@ -361,28 +336,19 @@ export default function HomeScreen() {
               </View>
             </TouchableOpacity>
           ))}
-          <TouchableOpacity
-            style={styles.viewAllButton}
-            onPress={() => router.push('/tasks')}
-          >
+          <TouchableOpacity style={styles.viewAllButton} onPress={() => router.push('/tasks')}>
             <Text style={styles.viewAllText}>View All Tasks</Text>
           </TouchableOpacity>
         </View>
       )}
 
       <View style={styles.quickActions}>
-        <TouchableOpacity
-          style={styles.actionCard}
-          onPress={() => router.push('/steps')}
-        >
+        <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/steps')}>
           <BookOpen size={32} color={theme.primary} />
           <Text style={styles.actionTitle}>12 Steps</Text>
           <Text style={styles.actionSubtitle}>Learn & Reflect</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.actionCard}
-          onPress={() => router.push('/manage-tasks')}
-        >
+        <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/manage-tasks')}>
           <ClipboardList size={32} color={theme.primary} />
           <Text style={styles.actionTitle}>Manage Tasks</Text>
           <Text style={styles.actionSubtitle}>Guide Progress</Text>
@@ -391,8 +357,6 @@ export default function HomeScreen() {
     </ScrollView>
   );
 }
-
-import { BookOpen, ClipboardList } from 'lucide-react-native';
 
 const createStyles = (theme: any) =>
   StyleSheet.create({
