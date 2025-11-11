@@ -112,16 +112,98 @@ concurrency:
 - Missing environment variables
 - Expo build failures
 
+### 3. Build for Android
+
+**Purpose**: Triggers EAS build for Android platform
+
+**Dependencies**: Runs after lint-and-typecheck succeeds
+
+**Steps**:
+
+1. Checkout code
+2. Setup Node.js 22 (latest LTS)
+3. Install pnpm (latest version)
+4. Setup pnpm cache
+5. Install dependencies with `pnpm install --frozen-lockfile`
+6. Setup Expo and EAS CLI
+7. Trigger Android build with EAS (`eas build --platform android --profile preview`)
+
+**Duration**: ~1-2 minutes (workflow) + 5-15 minutes (EAS build on remote infrastructure)
+
+**Build Profile**: Uses `preview` profile from `eas.json`
+
+**Build Location**: Builds run on EAS infrastructure (not GitHub Actions runners)
+
+**Build Output**: Build artifacts are managed by EAS and available in Expo dashboard
+
+**Failure Scenarios**:
+
+- Missing `EXPO_TOKEN` secret
+- EAS configuration errors
+- Build profile issues in `eas.json`
+- Native dependencies conflicts
+- Code signing issues (certificates, provisioning profiles)
+
+**Notes**:
+
+- Uses `--no-wait` flag so workflow doesn't wait for EAS build to complete
+- Build status can be monitored in Expo dashboard
+- Builds are queued on EAS infrastructure
+
+### 4. Build for iOS
+
+**Purpose**: Triggers EAS build for iOS platform
+
+**Dependencies**: Runs after lint-and-typecheck succeeds
+
+**Steps**:
+
+1. Checkout code
+2. Setup Node.js 22 (latest LTS)
+3. Install pnpm (latest version)
+4. Setup pnpm cache
+5. Install dependencies with `pnpm install --frozen-lockfile`
+6. Setup Expo and EAS CLI
+7. Trigger iOS build with EAS (`eas build --platform ios --profile preview`)
+
+**Duration**: ~1-2 minutes (workflow) + 10-20 minutes (EAS build on remote infrastructure)
+
+**Build Profile**: Uses `preview` profile from `eas.json`
+
+**Build Location**: Builds run on EAS infrastructure with macOS workers (not GitHub Actions runners)
+
+**Build Output**: Build artifacts are managed by EAS and available in Expo dashboard
+
+**Failure Scenarios**:
+
+- Missing `EXPO_TOKEN` secret
+- EAS configuration errors
+- Build profile issues in `eas.json`
+- Native dependencies conflicts
+- Apple code signing issues (certificates, provisioning profiles)
+- App Store Connect API key issues
+
+**Notes**:
+
+- Uses `--no-wait` flag so workflow doesn't wait for EAS build to complete
+- Build status can be monitored in Expo dashboard
+- Builds use EAS macOS infrastructure (GitHub Actions macOS runners not required)
+- iOS builds may take longer due to Apple toolchain compilation
+
 ## Required Secrets
 
 Configure these secrets in your GitHub repository settings (Settings → Secrets and variables → Actions):
 
-| Secret Name                     | Description                 | Required For |
-| ------------------------------- | --------------------------- | ------------ |
-| `EXPO_PUBLIC_SUPABASE_URL`      | Your Supabase project URL   | Build job    |
-| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anonymous key | Build job    |
+| Secret Name                     | Description                      | Required For               |
+| ------------------------------- | -------------------------------- | -------------------------- |
+| `EXPO_PUBLIC_SUPABASE_URL`      | Your Supabase project URL        | Web build job              |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anonymous key      | Web build job              |
+| `EXPO_TOKEN`                    | Expo access token for EAS builds | Android and iOS build jobs |
 
-**Note**: These secrets are only used during the build process and are not exposed in logs.
+**Notes**:
+
+- Secrets are only used during the build process and are not exposed in logs
+- To get your `EXPO_TOKEN`: Run `eas login && eas whoami` and copy the token, or create one at https://expo.dev/accounts/[account]/settings/access-tokens
 
 ## Caching Strategy
 
@@ -201,6 +283,50 @@ The workflow uses GitHub Actions cache to speed up builds:
 2. Use `pnpm lint` in pre-commit hooks
 3. Review ESLint configuration in `.eslintrc` or package.json
 
+### EAS Build Failures (Android/iOS)
+
+**Symptoms**:
+
+- Workflow completes but build fails on EAS
+- Missing EXPO_TOKEN error
+- Build configuration errors
+
+**Common Issues**:
+
+1. **Missing EXPO_TOKEN**:
+   - Error: "Authentication token is required"
+   - Solution: Add EXPO_TOKEN to GitHub secrets
+
+2. **EAS Build Quota Exceeded**:
+   - Error: Build quota exceeded
+   - Solution: Check your Expo plan limits or upgrade
+
+3. **Code Signing Issues**:
+   - iOS: Missing provisioning profile or certificate
+   - Android: Missing keystore
+   - Solution: Run `eas credentials` to configure
+
+4. **Native Dependencies**:
+   - Error: Build fails during native compilation
+   - Solution: Check `eas.json` configuration and native dependencies
+
+5. **Build Profile Issues**:
+   - Error: Profile "preview" not found
+   - Solution: Verify `eas.json` has the correct profile configuration
+
+**Monitoring EAS Builds**:
+
+1. Visit Expo dashboard: https://expo.dev/accounts/[account]/projects/12-step-tracker/builds
+2. Check build logs for detailed error messages
+3. Use `eas build:list` command locally to see build status
+
+**Solutions**:
+
+1. Test builds locally first: `eas build --platform android --profile preview --local`
+2. Verify credentials: `eas credentials`
+3. Check EAS configuration: Review `eas.json` and `app.json`
+4. Review build logs in Expo dashboard for specific errors
+
 ## Monitoring
 
 ### Viewing Workflow Runs
@@ -211,12 +337,21 @@ The workflow uses GitHub Actions cache to speed up builds:
 
 ### Understanding Build Artifacts
 
-Build artifacts contain the compiled web application:
+**Web Build Artifacts**:
 
 - Located under workflow run → Artifacts section
 - Download as zip file
 - Extract to view built application
 - Useful for debugging production builds
+- Retained for 7 days
+
+**Mobile Build Artifacts (Android/iOS)**:
+
+- Managed by EAS, not stored in GitHub Actions artifacts
+- Access via Expo dashboard: https://expo.dev/accounts/[account]/projects/12-step-tracker/builds
+- Download APK (Android) or IPA (iOS) files from Expo
+- Build logs available in Expo dashboard
+- Builds retained according to your Expo plan
 
 ### Status Badges
 
@@ -231,11 +366,13 @@ Add to README if desired:
 Potential improvements to consider:
 
 1. **Test Job**: Add automated testing when tests are implemented
-2. **Deploy Job**: Automatically deploy to hosting on main branch pushes
-3. **Mobile Builds**: Use EAS Build for native app builds
+2. **Deploy Job**: Automatically deploy web build to hosting on main branch pushes
+3. **Automatic Submission**: Submit successful builds to app stores automatically
 4. **Code Coverage**: Track test coverage over time
 5. **Dependabot**: Automatically update dependencies
 6. **Security Scanning**: Add CodeQL or similar security analysis
+7. **Build Caching**: Cache native build artifacts to speed up EAS builds
+8. **Preview Deployments**: Deploy preview builds for each PR
 
 ## Development Workflow
 
@@ -245,16 +382,24 @@ Recommended workflow when working with this CI:
    - Run `pnpm typecheck` locally
    - Run `pnpm lint` locally
    - Ensure all changes are tested
+   - For native code changes, test with `eas build --platform [android|ios] --profile development --local`
 
 2. **Creating Pull Requests**:
    - Wait for CI to pass before requesting review
    - Check CI logs if failures occur
+   - For mobile build failures, check Expo dashboard for detailed logs
    - Fix issues and push again
 
-3. **Merging**:
-   - Ensure CI passes on PR
+3. **Monitoring Builds**:
+   - Web builds: Check GitHub Actions artifacts
+   - Mobile builds: Monitor via Expo dashboard
+   - Build notifications available in Expo account settings
+
+4. **Merging**:
+   - Ensure all CI jobs pass (lint, web build, Android build, iOS build)
    - Squash commits if desired
    - CI will run again on merged commit
+   - Check Expo dashboard to verify mobile builds complete successfully
 
 ## Contact
 
