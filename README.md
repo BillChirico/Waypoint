@@ -217,16 +217,35 @@ This project is configured for Expo Application Services (EAS) builds:
 
 ```bash
 # Development build
-eas build --profile development
+eas build --profile development --platform [ios|android]
 
-# Preview build
-eas build --profile preview
+# Preview build (used by CI/CD)
+eas build --profile preview --platform [ios|android]
 
 # Production build
-eas build --profile production
+eas build --profile production --platform [ios|android]
+
+# Build for both platforms
+eas build --profile preview --platform all
 ```
 
-EAS Project ID: `4652ad8b-2e44-4270-8612-64c4587219d8`
+**EAS Project ID**: `4652ad8b-2e44-4270-8612-64c4587219d8`
+
+### Build Profiles
+
+The project includes three build profiles configured in `eas.json`:
+
+- **development**: Development client with internal distribution for testing
+- **preview**: Internal distribution for CI/CD and QA testing (uses Release configuration)
+- **production**: Production builds with auto-increment version numbers
+
+The **preview** profile is used by the CI/CD pipeline and includes:
+
+- Internal distribution for easy testing
+- OTA update channel (`preview`)
+- Environment variables for Supabase integration
+- Release build configuration for iOS
+- APK output for Android (faster than AAB for testing)
 
 ## Database Schema
 
@@ -280,11 +299,21 @@ The review comment updates throughout the process, showing progress from "in pro
 
 ### GitHub Secrets Required
 
-For the build jobs to work, configure these secrets in your GitHub repository settings:
+For the build jobs to work, configure these secrets in your GitHub repository settings (Settings → Secrets and variables → Actions):
 
-- `EXPO_PUBLIC_SUPABASE_URL` - Your Supabase project URL
-- `EXPO_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
-- `EXPO_TOKEN` - Your Expo access token for EAS builds (required for Android/iOS builds)
+| Secret Name                     | Description                      | How to Get It                                                                                         |
+| ------------------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `EXPO_PUBLIC_SUPABASE_URL`      | Your Supabase project URL        | From your Supabase project settings                                                                   |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anonymous key      | From your Supabase project API settings                                                               |
+| `EXPO_TOKEN`                    | Expo access token for EAS builds | Run `eas login && eas whoami` or create at https://expo.dev/accounts/[account]/settings/access-tokens |
+
+**Setting up `EXPO_TOKEN`**:
+
+1. Login to Expo: `eas login`
+2. Create a token: Visit https://expo.dev/accounts/[your-account]/settings/access-tokens
+3. Click "Create Token" and give it a descriptive name (e.g., "GitHub Actions")
+4. Copy the token immediately (it won't be shown again)
+5. Add it to GitHub: Repository Settings → Secrets and variables → Actions → New repository secret
 
 ### Workflow Features
 
@@ -296,6 +325,21 @@ For the build jobs to work, configure these secrets in your GitHub repository se
 - ✅ **Node.js 22** - Uses latest LTS version of Node.js
 - ✅ **Latest pnpm** - Automatically uses the latest pnpm version
 - ✅ **Concurrency Control** - Automatically cancels outdated workflow runs when new commits are pushed
+
+### Monitoring Builds
+
+**GitHub Actions Workflow**:
+
+- View workflow runs: Repository → Actions tab
+- Check individual job logs for detailed output
+- Download web build artifacts from completed workflow runs
+
+**EAS Mobile Builds**:
+
+- Monitor builds: https://expo.dev/accounts/[account]/projects/12-step-tracker/builds
+- View detailed build logs and download APK/IPA files
+- Builds are triggered by CI but complete asynchronously on EAS infrastructure
+- Receive build notifications via email (configure in Expo account settings)
 
 ## Additional Documentation
 

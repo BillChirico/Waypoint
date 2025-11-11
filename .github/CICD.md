@@ -2,9 +2,58 @@
 
 This document provides detailed information about the continuous integration and deployment setup for the 12-Step Tracker project.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Pipeline Flow](#pipeline-flow)
+- [Workflow Triggers](#workflow-triggers)
+- [Concurrency Control](#concurrency-control)
+- [Jobs](#jobs)
+  - [Lint, Format, and Type Check](#1-lint-format-and-type-check)
+  - [Build for Web](#2-build-for-web)
+  - [Build for Android](#3-build-for-android)
+  - [Build for iOS](#4-build-for-ios)
+- [Required Secrets](#required-secrets)
+- [Caching Strategy](#caching-strategy)
+- [Performance Optimizations](#performance-optimizations)
+- [Troubleshooting](#troubleshooting)
+- [Monitoring](#monitoring)
+- [Development Workflow](#development-workflow)
+- [Quick Reference](#quick-reference)
+
 ## Overview
 
-The project uses GitHub Actions for automated testing, linting, type checking, and building. The workflow is defined in `.github/workflows/ci.yml`.
+The project uses GitHub Actions for automated testing, linting, type checking, and multi-platform building (Web, Android, iOS). The workflow is defined in `.github/workflows/ci.yml`.
+
+**Key Capabilities**:
+
+- Automated quality checks (TypeScript, ESLint, Prettier)
+- Parallel multi-platform builds
+- EAS integration for native mobile apps
+- Concurrency control to cancel outdated runs
+- Build artifact management
+
+## Pipeline Flow
+
+```
+Push to main/develop or PR
+        ↓
+[Lint, Format, Type Check]
+        ↓
+    ┌───┴───┬─────────┐
+    ↓       ↓         ↓
+[Web]  [Android]  [iOS]
+ (2-3m)  (1-2m)*  (1-2m)*
+
+* GitHub workflow completes in 1-2m
+  EAS builds continue async (5-20m)
+```
+
+**Job Dependencies**:
+
+- All build jobs wait for lint/typecheck to pass
+- Build jobs run in parallel (Web, Android, iOS)
+- Mobile builds trigger on EAS but don't block the workflow
 
 ## Workflow Triggers
 
@@ -84,7 +133,7 @@ concurrency:
 - Code formatting issues (not matching Prettier rules)
 - Missing dependencies
 
-### 2. Build
+### 2. Build for Web
 
 **Purpose**: Creates production web build to verify build process
 
@@ -149,6 +198,32 @@ concurrency:
 - Uses `--no-wait` flag so workflow doesn't wait for EAS build to complete
 - Build status can be monitored in Expo dashboard
 - Builds are queued on EAS infrastructure
+- Environment variables from GitHub secrets are passed to the build
+
+**Preview Profile Configuration** (`eas.json`):
+
+```json
+"preview": {
+  "distribution": "internal",
+  "channel": "preview",
+  "env": {
+    "EXPO_PUBLIC_SUPABASE_URL": "$EXPO_PUBLIC_SUPABASE_URL",
+    "EXPO_PUBLIC_SUPABASE_ANON_KEY": "$EXPO_PUBLIC_SUPABASE_ANON_KEY"
+  },
+  "ios": {
+    "buildConfiguration": "Release"
+  },
+  "android": {
+    "buildType": "apk"
+  }
+}
+```
+
+- **distribution**: Internal distribution for testing
+- **channel**: OTA update channel for preview builds
+- **env**: Environment variables injected into the build
+- **ios.buildConfiguration**: Uses Release build for better performance
+- **android.buildType**: Produces APK (faster than AAB for testing)
 
 ### 4. Build for iOS
 
@@ -189,16 +264,18 @@ concurrency:
 - Build status can be monitored in Expo dashboard
 - Builds use EAS macOS infrastructure (GitHub Actions macOS runners not required)
 - iOS builds may take longer due to Apple toolchain compilation
+- Environment variables from GitHub secrets are passed to the build
+- Uses the same `preview` profile configuration as Android (see above)
 
 ## Required Secrets
 
 Configure these secrets in your GitHub repository settings (Settings → Secrets and variables → Actions):
 
-| Secret Name                     | Description                      | Required For               |
-| ------------------------------- | -------------------------------- | -------------------------- |
-| `EXPO_PUBLIC_SUPABASE_URL`      | Your Supabase project URL        | Web build job              |
-| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anonymous key      | Web build job              |
-| `EXPO_TOKEN`                    | Expo access token for EAS builds | Android and iOS build jobs |
+| Secret Name                     | Description                      | Required For                       |
+| ------------------------------- | -------------------------------- | ---------------------------------- |
+| `EXPO_PUBLIC_SUPABASE_URL`      | Your Supabase project URL        | All build jobs (Web, Android, iOS) |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anonymous key      | All build jobs (Web, Android, iOS) |
+| `EXPO_TOKEN`                    | Expo access token for EAS builds | Android and iOS build jobs         |
 
 **Notes**:
 
@@ -401,6 +478,47 @@ Recommended workflow when working with this CI:
    - CI will run again on merged commit
    - Check Expo dashboard to verify mobile builds complete successfully
 
+## Quick Reference
+
+### Useful Commands
+
+```bash
+# Run checks locally (before pushing)
+pnpm typecheck          # Check TypeScript types
+pnpm lint               # Run ESLint
+pnpm format:check       # Check code formatting
+pnpm format             # Auto-format code
+
+# Build locally
+pnpm build:web          # Build for web
+
+# EAS builds (local)
+eas build --platform android --profile development --local
+eas build --platform ios --profile development --local
+
+# EAS builds (remote, same as CI)
+eas build --platform android --profile preview
+eas build --platform ios --profile preview
+
+# Check build status
+eas build:list          # List recent builds
+```
+
+### Important Links
+
+- **GitHub Actions**: [Repository Actions Tab](../../actions)
+- **EAS Dashboard**: https://expo.dev/accounts/[account]/projects/12-step-tracker/builds
+- **CI Workflow**: `.github/workflows/ci.yml`
+- **EAS Config**: `eas.json`
+- **Project Documentation**: `README.md`, `CLAUDE.md`
+
+### Workflow File Locations
+
+- Main CI: `.github/workflows/ci.yml`
+- Code Review: `.github/workflows/claude-code-review.yml`
+- Security Review: `.github/workflows/security-review.yml`
+- Documentation: `.github/workflows/docs-update.yml`
+
 ## Contact
 
 For questions or issues with CI/CD, check:
@@ -408,3 +526,4 @@ For questions or issues with CI/CD, check:
 - GitHub Actions logs
 - This documentation
 - `.github/workflows/ci.yml` for workflow definition
+- Expo dashboard for mobile build issues
