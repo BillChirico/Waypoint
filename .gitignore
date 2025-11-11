@@ -111,6 +111,9 @@ lerna-debug.log*
 coverage/
 .nyc_output/
 
+# Git worktrees
+.worktrees/
+
 # EAS
 .easignore
 eas-build-pre-install.sh
