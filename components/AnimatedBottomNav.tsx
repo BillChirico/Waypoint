@@ -36,23 +36,21 @@ export default function AnimatedBottomNav({
   const [textWidths, setTextWidths] = useState<number[]>([]);
 
   const activeIndex =
-    controlledActiveIndex !== undefined
-      ? controlledActiveIndex
-      : internalActiveIndex;
+    controlledActiveIndex !== undefined ? controlledActiveIndex : internalActiveIndex;
   const finalAccentColor = accentColor || theme.primary;
 
   const animatedValuesRef = useRef<
-    Array<{
+    {
       iconTranslateY: Animated.Value;
       lineWidth: Animated.Value;
-    }>
+    }[]
   >([]);
 
   if (animatedValuesRef.current.length !== items.length) {
     animatedValuesRef.current = items.map((_, index) => ({
       iconTranslateY: new Animated.Value(0),
       lineWidth: new Animated.Value(
-        index === activeIndex && textWidths[index] ? textWidths[index] : 0,
+        index === activeIndex && textWidths[index] ? textWidths[index] : 0
       ),
     }));
   }

@@ -1,0 +1,7 @@
+appId: com.billchirico.twelvesteptracker
+---
+# Smoke Test: Verify app launches and shows login screen
+# This minimal test validates Maestro setup works
+
+- launchApp
+- assertVisible: 'Login'
