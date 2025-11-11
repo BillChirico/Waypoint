@@ -110,9 +110,11 @@ export default function TasksScreen() {
             {getTasksByStatus('assigned').map(task => (
               <View key={task.id} style={styles.taskCard}>
                 <View style={styles.taskHeader}>
-                  <View style={styles.stepBadge}>
-                    <Text style={styles.stepBadgeText}>Step {task.step_number}</Text>
-                  </View>
+                  {task.step_number && (
+                    <View style={styles.stepBadge}>
+                      <Text style={styles.stepBadgeText}>Step {task.step_number}</Text>
+                    </View>
+                  )}
                   <Text style={styles.taskDate}>
                     {new Date(task.created_at).toLocaleDateString()}
                   </Text>
@@ -148,9 +150,11 @@ export default function TasksScreen() {
             {getTasksByStatus('completed').map(task => (
               <View key={task.id} style={[styles.taskCard, styles.completedCard]}>
                 <View style={styles.taskHeader}>
-                  <View style={styles.stepBadge}>
-                    <Text style={styles.stepBadgeText}>Step {task.step_number}</Text>
-                  </View>
+                  {task.step_number && (
+                    <View style={styles.stepBadge}>
+                      <Text style={styles.stepBadgeText}>Step {task.step_number}</Text>
+                    </View>
+                  )}
                   <CheckCircle size={20} color={theme.primary} />
                 </View>
                 <Text style={styles.taskTitle}>{task.title}</Text>
@@ -194,9 +198,11 @@ export default function TasksScreen() {
               {selectedTask && (
                 <>
                   <View style={styles.taskSummary}>
-                    <View style={styles.stepBadge}>
-                      <Text style={styles.stepBadgeText}>Step {selectedTask.step_number}</Text>
-                    </View>
+                    {selectedTask.step_number && (
+                      <View style={styles.stepBadge}>
+                        <Text style={styles.stepBadgeText}>Step {selectedTask.step_number}</Text>
+                      </View>
+                    )}
                     <Text style={styles.taskSummaryTitle}>{selectedTask.title}</Text>
                   </View>
 

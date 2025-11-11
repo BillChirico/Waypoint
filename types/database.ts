@@ -62,7 +62,7 @@ export interface Task {
   id: string;
   sponsor_id: string;
   sponsee_id: string;
-  step_number: number;
+  step_number?: number;
   title: string;
   description: string;
   due_date?: string;

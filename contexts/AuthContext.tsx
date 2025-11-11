@@ -130,7 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
     } else {
       const redirectUrl = makeRedirectUri({
-        scheme: 'myapp',
+        scheme: '12stepstracker',
         path: 'auth/callback',
       });
 

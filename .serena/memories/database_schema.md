@@ -36,7 +36,7 @@ Step-based task assignments
 - `sponsee_id` (uuid, FK → profiles)
 - `title` (text)
 - `description` (text)
-- `step_number` (integer) - Associated step (1-12)
+- `step_number` (integer, nullable) - Associated step (1-12), NULL for general tasks not tied to a specific step
 - `status` (enum) - 'pending' | 'in_progress' | 'completed'
 - `due_date` (date)
 - `completed_at` (timestamp)

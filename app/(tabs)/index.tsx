@@ -258,7 +258,7 @@ export default function HomeScreen() {
       {tasks.length > 0 && (
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <CheckCircle size={24} color="#374151" />
+            <CheckCircle size={24} color={theme.textSecondary} />
             <Text style={styles.cardTitle}>Recent Tasks</Text>
           </View>
           {tasks.map((task) => (
@@ -453,7 +453,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
+    borderTopColor: theme.borderLight,
   },
   taskInfo: {
     flex: 1,
@@ -462,12 +462,12 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontSize: 16,
     fontFamily: theme.fontRegular,
     fontWeight: '600',
-    color: '#111827',
+    color: theme.text,
   },
   taskMeta: {
     fontSize: 14,
     fontFamily: theme.fontRegular,
-    color: '#6b7280',
+    color: theme.textSecondary,
     marginTop: 2,
   },
   taskBadge: {
