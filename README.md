@@ -262,7 +262,9 @@ This project uses GitHub Actions for automated testing and builds.
 The CI workflow runs on every push to `main` and `develop` as well as on all pull requests:
 
 1. **Lint, Format, and Type Check** - Validates code quality, formatting, and TypeScript types
-2. **Build** - Creates production web build
+2. **Build for Web** - Creates production web build
+3. **Build for Android** - Triggers EAS build for Android (preview profile)
+4. **Build for iOS** - Triggers EAS build for iOS (preview profile)
 
 ### Claude Code Review
 
@@ -278,15 +280,18 @@ The review comment updates throughout the process, showing progress from "in pro
 
 ### GitHub Secrets Required
 
-For the build job to work, configure these secrets in your GitHub repository settings:
+For the build jobs to work, configure these secrets in your GitHub repository settings:
 
 - `EXPO_PUBLIC_SUPABASE_URL` - Your Supabase project URL
 - `EXPO_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+- `EXPO_TOKEN` - Your Expo access token for EAS builds (required for Android/iOS builds)
 
 ### Workflow Features
 
 - ✅ **Dependency Caching** - Uses pnpm cache for faster builds
-- ✅ **Parallel Jobs** - Lint/typecheck and build run in parallel after linting passes
+- ✅ **Parallel Jobs** - Lint/typecheck and build jobs run in parallel after linting passes
+- ✅ **Multi-Platform Builds** - Builds for Web, Android, and iOS in parallel
+- ✅ **EAS Build Integration** - Uses Expo Application Services for native mobile builds
 - ✅ **Build Artifacts** - Web builds are stored as artifacts for 7 days
 - ✅ **Node.js 22** - Uses latest LTS version of Node.js
 - ✅ **Latest pnpm** - Automatically uses the latest pnpm version
