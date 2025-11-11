@@ -215,6 +215,11 @@ Mobile builds are triggered by CI but complete asynchronously on EAS infrastruct
 ### Code Quality Tools
 
 - **Pre-commit Hooks**: Husky + lint-staged (auto-format and lint on commit)
+  - Configuration: `package.json` → `lint-staged` section
+  - Hook script: `.husky/pre-commit`
+  - Prettier formats **all** staged files (uses `--ignore-unknown`)
+  - ESLint fixes staged JavaScript/TypeScript files
+  - See `.github/GIT_HOOKS.md` for details
 - **Claude Code Review**: AI-powered PR reviews with sticky comments
 - **TypeScript Strict Mode**: Full type safety enforcement
 - **ESLint**: Expo configuration with custom rules
@@ -232,12 +237,12 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
 
 ### Before Committing
 
-1. Run `pnpm typecheck` to catch type errors
-2. Run `pnpm lint` to check code quality
+1. Run `pnpm typecheck` to catch type errors (hooks don't run this)
+2. Run `pnpm lint` to check code quality (optional - hooks run this automatically)
 3. Pre-commit hooks will automatically:
-   - Format code with Prettier
-   - Lint and auto-fix with ESLint
-   - Only process staged files
+   - Format **all** staged files with Prettier
+   - Lint and auto-fix JavaScript/TypeScript with ESLint
+   - Only process staged files (fast!)
 
 ### Creating Pull Requests
 

@@ -353,12 +353,15 @@ The workflow uses GitHub Actions cache to speed up builds:
 
 - Code that passes locally but fails in CI usually means eslint config differences
 - Pre-commit hooks not catching issues
+- Hooks were skipped with `--no-verify`
 
 **Solutions**:
 
 1. Run `pnpm lint` before pushing
-2. Use `pnpm lint` in pre-commit hooks
-3. Review ESLint configuration in `.eslintrc` or package.json
+2. Ensure pre-commit hooks are running (see `.github/GIT_HOOKS.md`)
+3. Review ESLint configuration in `package.json` or `.eslintrc`
+4. Check lint-staged configuration in `package.json`
+5. Don't skip pre-commit hooks unless absolutely necessary
 
 ### EAS Build Failures (Android/iOS)
 
@@ -510,6 +513,7 @@ eas build:list          # List recent builds
 - **EAS Dashboard**: https://expo.dev/accounts/[account]/projects/12-step-tracker/builds
 - **CI Workflow**: `.github/workflows/ci.yml`
 - **EAS Config**: `eas.json`
+- **Git Hooks**: `.github/GIT_HOOKS.md`
 - **Project Documentation**: `README.md`, `CLAUDE.md`
 
 ### Workflow File Locations
