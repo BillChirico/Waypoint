@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/lib/supabase';
 import { UserStepProgress, SlipUp } from '@/types/database';
 import { Calendar, CheckCircle, Heart, RefreshCw, Award, TrendingUp } from 'lucide-react-native';
+import { useFocusEffect } from '@react-navigation/native';
 
 type TimelineEventType = 'sobriety_start' | 'slip_up' | 'step_completion' | 'milestone';
 
@@ -26,9 +27,11 @@ export default function JourneyScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchTimelineData();
-  }, [profile]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchTimelineData();
+    }, [profile])
+  );
 
   const fetchTimelineData = async () => {
     if (!profile) return;
