@@ -1,30 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  ActivityIndicator,
-} from 'react-native';
+import React, { useState, useCallback, useMemo } from 'react';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/lib/supabase';
 import { UserStepProgress, SlipUp } from '@/types/database';
-import {
-  Calendar,
-  CheckCircle,
-  Heart,
-  RefreshCw,
-  Award,
-  TrendingUp,
-} from 'lucide-react-native';
+import { Calendar, CheckCircle, Heart, RefreshCw, Award, TrendingUp } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
-type TimelineEventType =
-  | 'sobriety_start'
-  | 'slip_up'
-  | 'step_completion'
-  | 'milestone';
+type TimelineEventType = 'sobriety_start' | 'slip_up' | 'step_completion' | 'milestone';
 
 interface TimelineEvent {
   id: string;
@@ -44,13 +27,7 @@ export default function JourneyScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchTimelineData();
-    }, [profile]),
-  );
-
-  const fetchTimelineData = async () => {
+  const fetchTimelineData = useCallback(async () => {
     if (!profile) return;
 
     try {
@@ -111,8 +88,7 @@ export default function JourneyScreen() {
             type: 'step_completion',
             date: new Date(progress.completed_at),
             title: `Step ${progress.step_number} Completed`,
-            description:
-              progress.notes || `Completed Step ${progress.step_number}`,
+            description: progress.notes || `Completed Step ${progress.step_number}`,
             icon: 'check',
             color: '#10b981',
             metadata: progress,
@@ -125,7 +101,7 @@ export default function JourneyScreen() {
         const sobrietyDate = new Date(profile.sobriety_date);
         const today = new Date();
         const daysSober = Math.floor(
-          (today.getTime() - sobrietyDate.getTime()) / (1000 * 60 * 60 * 24),
+          (today.getTime() - sobrietyDate.getTime()) / (1000 * 60 * 60 * 24)
         );
 
         const milestones = [
@@ -166,17 +142,23 @@ export default function JourneyScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [profile, theme.primary]);
 
-  const getDaysSober = () => {
+  useFocusEffect(
+    useCallback(() => {
+      fetchTimelineData();
+    }, [fetchTimelineData])
+  );
+
+  const getDaysSober = useCallback(() => {
     if (!profile?.sobriety_date) return 0;
     const sobrietyDate = new Date(profile.sobriety_date);
     const today = new Date();
     const diff = today.getTime() - sobrietyDate.getTime();
     return Math.floor(diff / (1000 * 60 * 60 * 24));
-  };
+  }, [profile?.sobriety_date]);
 
-  const getIcon = (iconType: string, color: string) => {
+  const getIcon = useCallback((iconType: string, color: string) => {
     const size = 20;
     switch (iconType) {
       case 'calendar':
@@ -194,17 +176,18 @@ export default function JourneyScreen() {
       default:
         return <Calendar size={size} color={color} />;
     }
-  };
+  }, []);
 
-  const formatDate = (date: Date) => {
+  const formatDate = useCallback((date: Date) => {
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
     });
-  };
+  }, []);
 
-  const styles = createStyles(theme);
+  const daysSober = useMemo(() => getDaysSober(), [getDaysSober]);
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   if (loading) {
     return (
@@ -246,7 +229,7 @@ export default function JourneyScreen() {
             <View style={styles.statMain}>
               <TrendingUp size={32} color={theme.primary} />
               <View style={styles.statMainContent}>
-                <Text style={styles.statMainNumber}>{getDaysSober()}</Text>
+                <Text style={styles.statMainNumber}>{daysSober}</Text>
                 <Text style={styles.statMainLabel}>Days Sober</Text>
               </View>
             </View>
@@ -254,14 +237,14 @@ export default function JourneyScreen() {
               <View style={styles.statItem}>
                 <CheckCircle size={18} color="#10b981" />
                 <Text style={styles.statValue}>
-                  {events.filter((e) => e.type === 'step_completion').length}
+                  {events.filter(e => e.type === 'step_completion').length}
                 </Text>
                 <Text style={styles.statLabel}>Steps Completed</Text>
               </View>
               <View style={styles.statItem}>
                 <Award size={18} color="#8b5cf6" />
                 <Text style={styles.statValue}>
-                  {events.filter((e) => e.type === 'milestone').length}
+                  {events.filter(e => e.type === 'milestone').length}
                 </Text>
                 <Text style={styles.statLabel}>Milestones</Text>
               </View>
@@ -282,40 +265,22 @@ export default function JourneyScreen() {
             {events.map((event, index) => (
               <View key={event.id} style={styles.timelineItem}>
                 <View style={styles.timelineLine}>
-                  <View
-                    style={[
-                      styles.timelineDot,
-                      { backgroundColor: event.color },
-                    ]}
-                  />
-                  {index < events.length - 1 && (
-                    <View style={styles.timelineConnector} />
-                  )}
+                  <View style={[styles.timelineDot, { backgroundColor: event.color }]} />
+                  {index < events.length - 1 && <View style={styles.timelineConnector} />}
                 </View>
                 <View style={styles.timelineContent}>
                   <View style={styles.timelineDate}>
-                    <Text style={styles.timelineDateText}>
-                      {formatDate(event.date)}
-                    </Text>
+                    <Text style={styles.timelineDateText}>{formatDate(event.date)}</Text>
                   </View>
-                  <View
-                    style={[styles.eventCard, { borderLeftColor: event.color }]}
-                  >
+                  <View style={[styles.eventCard, { borderLeftColor: event.color }]}>
                     <View style={styles.eventHeader}>
-                      <View
-                        style={[
-                          styles.eventIcon,
-                          { backgroundColor: event.color + '20' },
-                        ]}
-                      >
+                      <View style={[styles.eventIcon, { backgroundColor: event.color + '20' }]}>
                         {getIcon(event.icon, event.color)}
                       </View>
                       <Text style={styles.eventTitle}>{event.title}</Text>
                     </View>
                     {event.description && (
-                      <Text style={styles.eventDescription}>
-                        {event.description}
-                      </Text>
+                      <Text style={styles.eventDescription}>{event.description}</Text>
                     )}
                   </View>
                 </View>
