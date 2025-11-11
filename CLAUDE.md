@@ -12,6 +12,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 2. **ALWAYS use ToolHive** (`mcp__toolhive-mcp-optimizer__find_tool`) to discover relevant MCP tools BEFORE implementing any solution
 3. **Prioritize MCP tools** over generic approaches - they provide optimized, specialized functionality
 4. **Search for tools first** - Don't assume you need to implement something from scratch when an MCP tool might exist
+5. **Always** use memory-keeper to track progress
+6. **Save** architectural decisions and test results
+7. **Create** checkpoints before context limits
 
 ### Available MCP Servers
 
