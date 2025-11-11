@@ -189,7 +189,7 @@ docs/
 
 **Technology Stack**:
 
-- **Frontend**: React Native 0.81.4 with React 19
+- **Frontend**: React Native 0.81.5 with React 19
 - **Framework**: Expo 54
 - **Router**: Expo Router v6 (file-based routing)
 - **Backend**: Supabase (PostgreSQL)
