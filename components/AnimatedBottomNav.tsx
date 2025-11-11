@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, LayoutChangeEvent, Platform } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -23,56 +23,68 @@ export default function AnimatedBottomNav({
   onActiveIndexChange,
   accentColor,
 }: AnimatedBottomNavProps) {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const [internalActiveIndex, setInternalActiveIndex] = useState(0);
-  const [itemWidths, setItemWidths] = useState<number[]>([]);
   const [textWidths, setTextWidths] = useState<number[]>([]);
 
   const activeIndex = controlledActiveIndex !== undefined ? controlledActiveIndex : internalActiveIndex;
   const finalAccentColor = accentColor || theme.primary;
 
-  const animatedValues = items.map(() => ({
-    iconScale: new Animated.Value(1),
-    iconTranslateY: new Animated.Value(0),
-    textOpacity: new Animated.Value(0),
-    lineWidth: new Animated.Value(0),
-  }));
+  const animatedValuesRef = useRef<Array<{
+    iconTranslateY: Animated.Value;
+    lineWidth: Animated.Value;
+  }>>([]);
+
+  if (animatedValuesRef.current.length !== items.length) {
+    animatedValuesRef.current = items.map((_, index) => ({
+      iconTranslateY: new Animated.Value(0),
+      lineWidth: new Animated.Value(
+        index === activeIndex && textWidths[index] ? textWidths[index] : 0
+      ),
+    }));
+  }
 
   useEffect(() => {
     items.forEach((_, index) => {
       const isActive = index === activeIndex;
+      const animValues = animatedValuesRef.current[index];
 
-      Animated.parallel([
-        Animated.spring(animatedValues[index].iconScale, {
-          toValue: isActive ? 1.1 : 1,
-          useNativeDriver: true,
-          friction: 7,
-        }),
+      if (!animValues) return;
+
+      if (isActive) {
         Animated.sequence([
-          Animated.timing(animatedValues[index].iconTranslateY, {
-            toValue: isActive ? -4 : 0,
-            duration: 150,
+          Animated.timing(animValues.iconTranslateY, {
+            toValue: -4.8,
+            duration: 100,
             useNativeDriver: true,
           }),
-          Animated.timing(animatedValues[index].iconTranslateY, {
+          Animated.timing(animValues.iconTranslateY, {
             toValue: 0,
             duration: 150,
             useNativeDriver: true,
           }),
-        ]),
-        Animated.timing(animatedValues[index].textOpacity, {
-          toValue: isActive ? 1 : 0.6,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(animatedValues[index].lineWidth, {
-          toValue: isActive && textWidths[index] ? textWidths[index] : 0,
-          duration: 300,
-          useNativeDriver: false,
-        }),
-      ]).start();
+          Animated.timing(animValues.iconTranslateY, {
+            toValue: -1.6,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+          Animated.timing(animValues.iconTranslateY, {
+            toValue: 0,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      } else {
+        animValues.iconTranslateY.setValue(0);
+      }
+
+      Animated.timing(animValues.lineWidth, {
+        toValue: isActive && textWidths[index] ? textWidths[index] : 0,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
     });
-  }, [activeIndex, textWidths]);
+  }, [activeIndex, textWidths, items]);
 
   const handleItemPress = (index: number) => {
     if (controlledActiveIndex === undefined) {
@@ -91,114 +103,129 @@ export default function AnimatedBottomNav({
     });
   };
 
-  const styles = createStyles(theme, finalAccentColor);
+  const styles = useMemo(() => createStyles(theme, finalAccentColor, isDark), [theme, finalAccentColor, isDark]);
 
   return (
     <View style={styles.container}>
-      {items.map((item, index) => {
-        const isActive = index === activeIndex;
-        const IconComponent = item.icon;
+      <View style={styles.menu}>
+        {items.map((item, index) => {
+          const isActive = index === activeIndex;
+          const IconComponent = item.icon;
+          const animValues = animatedValuesRef.current[index];
 
-        return (
-          <TouchableOpacity
-            key={`${item.label}-${index}`}
-            style={styles.item}
-            onPress={() => handleItemPress(index)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.itemContent}>
+          return (
+            <TouchableOpacity
+              key={`${item.label}-${index}`}
+              style={[styles.menuItem, isActive && styles.menuItemActive]}
+              onPress={() => handleItemPress(index)}
+              activeOpacity={0.8}
+            >
               <Animated.View
                 style={[
-                  styles.iconContainer,
+                  styles.iconWrapper,
                   {
                     transform: [
-                      { scale: animatedValues[index].iconScale },
-                      { translateY: animatedValues[index].iconTranslateY },
+                      { translateY: animValues ? animValues.iconTranslateY : 0 },
                     ],
                   },
                 ]}
               >
                 <IconComponent
                   size={24}
-                  color={isActive ? finalAccentColor : theme.textTertiary}
+                  color={isActive ? finalAccentColor : styles.inactiveColor.color}
                 />
               </Animated.View>
 
-              <View style={styles.textContainer}>
-                <Animated.Text
+              <View style={styles.textWrapper}>
+                <Text
                   style={[
-                    styles.label,
-                    {
-                      color: isActive ? finalAccentColor : theme.textTertiary,
-                      opacity: animatedValues[index].textOpacity,
-                    },
+                    styles.menuText,
+                    isActive ? { color: finalAccentColor, fontWeight: '700' } : styles.inactiveColor,
                   ]}
                   onLayout={handleTextLayout(index)}
                   numberOfLines={1}
                 >
                   {item.label}
-                </Animated.Text>
+                </Text>
 
                 <Animated.View
                   style={[
                     styles.underline,
                     {
                       backgroundColor: finalAccentColor,
-                      width: animatedValues[index].lineWidth,
+                      width: animValues ? animValues.lineWidth : 0,
                     },
                   ]}
                 />
               </View>
-            </View>
-          </TouchableOpacity>
-        );
-      })}
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </View>
   );
 }
 
-const createStyles = (theme: any, accentColor: string) =>
-  StyleSheet.create({
+const createStyles = (theme: any, accentColor: string, isDark: boolean) => {
+  const inactiveColor = isDark ? theme.textSecondary : theme.textTertiary;
+  const backgroundColor = theme.card || theme.surface;
+
+  return StyleSheet.create({
     container: {
-      flexDirection: 'row',
-      backgroundColor: theme.surface,
+      backgroundColor: backgroundColor,
       borderTopWidth: 1,
       borderTopColor: theme.border,
-      height: Platform.OS === 'web' ? 90 : 85,
-      paddingBottom: Platform.OS === 'web' ? 20 : 12,
-      paddingTop: Platform.OS === 'web' ? 12 : 8,
-      paddingHorizontal: 8,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: -2 },
+      paddingBottom: Platform.OS === 'ios' ? 20 : 8,
+      shadowColor: theme.border,
+      shadowOffset: { width: 0, height: -1 },
       shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 8,
+      shadowRadius: 2,
+      elevation: 4,
     },
-    item: {
+    menu: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-around',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      gap: 8,
+    },
+    menuItem: {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
+      paddingVertical: 8,
+      paddingHorizontal: 4,
+      borderRadius: 12,
+      minHeight: 60,
     },
-    itemContent: {
+    menuItemActive: {
+      backgroundColor: theme.secondary || 'rgba(0, 0, 0, 0.05)',
+    },
+    iconWrapper: {
+      marginBottom: 4,
       alignItems: 'center',
       justifyContent: 'center',
     },
-    iconContainer: {
-      marginBottom: 4,
-    },
-    textContainer: {
+    textWrapper: {
       alignItems: 'center',
+      justifyContent: 'center',
       minHeight: 20,
     },
-    label: {
-      fontSize: 12,
+    menuText: {
+      fontSize: 11,
       fontWeight: '600',
       textAlign: 'center',
-      textTransform: 'capitalize',
+      textTransform: 'lowercase',
+      letterSpacing: 0.3,
+    },
+    inactiveColor: {
+      color: inactiveColor,
     },
     underline: {
       height: 2,
       borderRadius: 1,
-      marginTop: 2,
+      marginTop: 4,
     },
   });
+};
