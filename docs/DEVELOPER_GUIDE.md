@@ -21,12 +21,12 @@ This guide will help you set up the 12-Step Tracker application for local develo
 
 ### Required Software
 
-1. **Node.js** (v18 or higher)
+1. **Node.js** (v22 or higher recommended)
    - Download from [nodejs.org](https://nodejs.org/)
    - Verify installation: `node --version`
 
-2. **pnpm** (package manager)
-   - Install: `npm install -g pnpm`
+2. **pnpm** (latest version)
+   - Install: `npm install -g pnpm@latest`
    - Verify installation: `pnpm --version`
 
 3. **Git**

@@ -4,25 +4,25 @@
 
 ### Start Development Server
 ```bash
-npm run dev
+pnpm dev
 ```
 Starts the Expo development server with telemetry disabled.
 
 ### Type Checking
 ```bash
-npm run typecheck
+pnpm typecheck
 ```
 Runs TypeScript type checking across the codebase.
 
 ### Linting
 ```bash
-npm run lint
+pnpm lint
 ```
 Runs ESLint to check code quality and style.
 
 ### Build for Web
 ```bash
-npm run build:web
+pnpm build:web
 ```
 Creates a production web build.
 

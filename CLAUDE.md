@@ -59,16 +59,16 @@ This is NOT optional - MCP tools provide significant benefits in efficiency, acc
 
 ```bash
 # Start development server (with telemetry disabled)
-npm run dev
+pnpm dev
 
 # Type checking
-npm run typecheck
+pnpm typecheck
 
 # Linting
-npm run lint
+pnpm lint
 
 # Build for web
-npm run build:web
+pnpm build:web
 ```
 
 ## Architecture

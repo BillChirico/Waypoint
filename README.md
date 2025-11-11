@@ -33,8 +33,8 @@ A React Native mobile application for tracking AA recovery progress and facilita
 
 Before you begin, ensure you have the following installed:
 
-- **Node.js** (v18 or later recommended)
-- **npm** or **yarn**
+- **Node.js** (v22 or later recommended)
+- **pnpm** (latest version)
 - **Expo CLI**: Installed via `npx` or globally
 - **For iOS Development** (macOS only):
   - Xcode (latest version)
@@ -57,7 +57,7 @@ cd 12-Step-Tracker
 ### 2. Install Dependencies
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### 3. Set Up Environment Variables
@@ -82,7 +82,7 @@ The database schema is located in `supabase/migrations/`. You'll need to:
 ### Start Development Server
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 Starts the Expo development server with telemetry disabled. Scan the QR code with Expo Go app or use a simulator.
@@ -90,7 +90,7 @@ Starts the Expo development server with telemetry disabled. Scan the QR code wit
 ### Run on iOS
 
 ```bash
-npm run ios
+pnpm ios
 ```
 
 Builds and runs the app on iOS Simulator. **Requires macOS and Xcode.**
@@ -100,7 +100,7 @@ This compiles the native iOS code and installs the app on the simulator.
 ### Run on Android
 
 ```bash
-npm run android
+pnpm android
 ```
 
 Builds and runs the app on Android Emulator. **Requires Android Studio and Android SDK.**
@@ -110,7 +110,7 @@ This compiles the native Android code and installs the app on the emulator or co
 ### Build for Web
 
 ```bash
-npm run build:web
+pnpm build:web
 ```
 
 Exports the app for web deployment to the `dist` folder.
@@ -118,7 +118,7 @@ Exports the app for web deployment to the `dist` folder.
 ### Type Checking
 
 ```bash
-npm run typecheck
+pnpm typecheck
 ```
 
 Runs TypeScript compiler in check mode without emitting files.
@@ -126,7 +126,7 @@ Runs TypeScript compiler in check mode without emitting files.
 ### Linting
 
 ```bash
-npm run lint
+pnpm lint
 ```
 
 Runs ESLint using Expo's lint configuration.
@@ -173,6 +173,7 @@ Google Sign-In is integrated but requires additional configuration. See `GOOGLE_
 - Mobile deep linking configuration
 
 **App Details:**
+
 - Bundle ID (iOS): `com.billchirico.12steptracker`
 - Package name (Android): `com.billchirico.twelvesteptracker`
 - Deep link scheme: `12stepstracker://`
@@ -213,16 +214,43 @@ All tables are secured with Row Level Security (RLS) policies ensuring proper da
 
 This is a private project for recovery support. If you're contributing, please ensure:
 
-- All code passes TypeScript type checking (`npm run typecheck`)
-- Code follows the linting rules (`npm run lint`)
+- All code passes TypeScript type checking (`pnpm typecheck`)
+- Code follows the linting rules (`pnpm lint`)
 - Test thoroughly on both iOS and Android platforms
 - Respect user privacy and data security
+
+## Continuous Integration
+
+This project uses GitHub Actions for automated testing and builds.
+
+### CI Pipeline
+
+The CI workflow runs on every push to `main` and `develop` as well as on all pull requests:
+
+1. **Lint and Type Check** - Validates code quality and TypeScript types
+2. **Build** - Creates production web build
+
+### GitHub Secrets Required
+
+For the build job to work, configure these secrets in your GitHub repository settings:
+
+- `EXPO_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+
+### Workflow Features
+
+- ✅ **Dependency Caching** - Uses pnpm cache for faster builds
+- ✅ **Parallel Jobs** - Lint/typecheck and build run in parallel after linting passes
+- ✅ **Build Artifacts** - Web builds are stored as artifacts for 7 days
+- ✅ **Node.js 22** - Uses latest LTS version of Node.js
+- ✅ **Latest pnpm** - Automatically uses the latest pnpm version
 
 ## Additional Documentation
 
 - `CLAUDE.md` - Detailed project architecture and code patterns
 - `GOOGLE_OAUTH_SETUP.md` - Google OAuth configuration guide
 - `supabase/migrations/` - Database schema and RLS policies
+- `.github/workflows/ci.yml` - CI/CD pipeline configuration
 
 ## License
 

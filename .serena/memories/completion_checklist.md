@@ -4,7 +4,7 @@ When completing a coding task, follow these steps to ensure quality and consiste
 
 ## 1. Type Checking
 ```bash
-npm run typecheck
+pnpm typecheck
 ```
 - Ensure no TypeScript errors
 - All types should be properly defined
@@ -12,7 +12,7 @@ npm run typecheck
 
 ## 2. Linting
 ```bash
-npm run lint
+pnpm lint
 ```
 - Fix all linting errors
 - Address warnings where possible
