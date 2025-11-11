@@ -140,7 +140,7 @@ export default function AnimatedBottomNav({
                 <Text
                   style={[
                     styles.menuText,
-                    isActive ? { color: finalAccentColor, fontWeight: '700' } : styles.inactiveColor,
+                    isActive ? { color: finalAccentColor, fontFamily: theme.fontBold } : styles.inactiveColor,
                   ]}
                   onLayout={handleTextLayout(index)}
                   numberOfLines={1}
@@ -214,7 +214,7 @@ const createStyles = (theme: any, accentColor: string, isDark: boolean) => {
     },
     menuText: {
       fontSize: 11,
-      fontWeight: '600',
+      fontFamily: theme.fontSemiBold,
       textAlign: 'center',
       textTransform: 'lowercase',
       letterSpacing: 0.3,
