@@ -18,6 +18,47 @@ The CI pipeline runs automatically on:
   - `main` branch
   - `develop` branch
 
+## Concurrency Control
+
+The workflow uses GitHub Actions concurrency control to automatically cancel outdated workflow runs when new commits are pushed to the same branch or pull request.
+
+**Configuration**:
+
+```yaml
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+```
+
+**How It Works**:
+
+- **Grouping**: Workflows are grouped by workflow name and git reference (branch/PR)
+- **Cancellation**: When a new commit is pushed, any in-progress workflows for the same group are automatically cancelled
+- **Resource Efficiency**: Saves CI/CD resources by not running outdated builds
+- **Faster Feedback**: Developers get feedback on the latest code faster
+
+**Benefits**:
+
+- **Cost Savings**: Reduces unnecessary workflow runs, saving GitHub Actions minutes
+- **Improved Developer Experience**: Latest changes are tested immediately without waiting for outdated runs
+- **Cleaner Actions Tab**: Fewer failed/cancelled runs cluttering the workflow history
+
+**Example Scenarios**:
+
+1. **Rapid Commits**: Developer pushes 3 commits in quick succession
+   - First workflow starts
+   - Second commit triggers new workflow, cancels first
+   - Third commit triggers new workflow, cancels second
+   - Only the third (latest) workflow completes
+
+2. **Pull Request Updates**: Force push to a PR branch
+   - Old workflow run is cancelled immediately
+   - New workflow starts with updated code
+
+3. **Multiple Branches**: Work on different branches simultaneously
+   - Each branch has its own concurrency group
+   - Workflows don't interfere with each other
+
 ## Jobs
 
 ### 1. Lint, Format, and Type Check
@@ -103,6 +144,7 @@ The workflow uses GitHub Actions cache to speed up builds:
 2. **Parallel Jobs**: Lint/typecheck can run independently, saving time
 3. **Dependency Caching**: pnpm cache significantly speeds up installation
 4. **Artifact Upload**: Only uploads build artifacts, not all node_modules
+5. **Concurrency Control**: Automatically cancels outdated workflow runs to save resources and provide faster feedback
 
 ## Troubleshooting
 

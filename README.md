@@ -290,6 +290,7 @@ For the build job to work, configure these secrets in your GitHub repository set
 - ✅ **Build Artifacts** - Web builds are stored as artifacts for 7 days
 - ✅ **Node.js 22** - Uses latest LTS version of Node.js
 - ✅ **Latest pnpm** - Automatically uses the latest pnpm version
+- ✅ **Concurrency Control** - Automatically cancels outdated workflow runs when new commits are pushed
 
 ## Additional Documentation
 
