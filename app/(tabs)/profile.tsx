@@ -190,10 +190,12 @@ export default function ProfileScreen() {
       });
 
       if (relationshipError) {
+        console.error('Relationship creation error:', relationshipError);
+        const errorMessage = relationshipError.message || 'Failed to connect with sponsor. Please try again.';
         if (Platform.OS === 'web') {
-          window.alert('Failed to connect with sponsor. Please try again.');
+          window.alert(`Failed to connect: ${errorMessage}`);
         } else {
-          Alert.alert('Error', 'Failed to connect with sponsor. Please try again.');
+          Alert.alert('Error', `Failed to connect: ${errorMessage}`);
         }
         setIsConnecting(false);
         return;
