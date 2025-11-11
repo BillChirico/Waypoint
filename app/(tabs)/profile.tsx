@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Alert, Share, Switch, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Alert, Share, Switch, Platform, ActivityIndicator } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/lib/supabase';
-import { User, LogOut, Heart, Calendar, Share2, QrCode, Bell, Moon, Sun, Monitor } from 'lucide-react-native';
+import { LogOut, Heart, Share2, QrCode, Bell, Moon, Sun, Monitor, UserMinus } from 'lucide-react-native';
 import packageJson from '../../package.json';
 
 export default function ProfileScreen() {
@@ -11,12 +11,46 @@ export default function ProfileScreen() {
   const { theme, themeMode, setThemeMode } = useTheme();
   const [inviteCode, setInviteCode] = useState('');
   const [showInviteInput, setShowInviteInput] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [sponsorRelationships, setSponsorRelationships] = useState<any[]>([]);
+  const [sponseeRelationships, setSponseeRelationships] = useState<any[]>([]);
+  const [loadingRelationships, setLoadingRelationships] = useState(true);
   const [notificationSettings, setNotificationSettings] = useState({
     tasks: profile?.notification_preferences?.tasks ?? true,
     messages: profile?.notification_preferences?.messages ?? true,
     milestones: profile?.notification_preferences?.milestones ?? true,
     daily: profile?.notification_preferences?.daily ?? true,
   });
+
+  const fetchRelationships = async () => {
+    if (!profile) return;
+
+    setLoadingRelationships(true);
+    try {
+      const { data: asSponsee } = await supabase
+        .from('sponsor_sponsee_relationships')
+        .select('*, sponsor:sponsor_id(*)')
+        .eq('sponsee_id', profile.id)
+        .eq('status', 'active');
+
+      const { data: asSponsor } = await supabase
+        .from('sponsor_sponsee_relationships')
+        .select('*, sponsee:sponsee_id(*)')
+        .eq('sponsor_id', profile.id)
+        .eq('status', 'active');
+
+      setSponsorRelationships(asSponsee || []);
+      setSponseeRelationships(asSponsor || []);
+    } catch (error) {
+      console.error('Error fetching relationships:', error);
+    } finally {
+      setLoadingRelationships(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRelationships();
+  }, [profile]);
 
   const getDaysSober = () => {
     if (!profile?.sobriety_date) return 0;
@@ -71,47 +105,145 @@ export default function ProfileScreen() {
   const joinWithInviteCode = async () => {
     if (!inviteCode.trim() || !profile) return;
 
-    const { data: invite, error: fetchError } = await supabase
-      .from('invite_codes')
-      .select('*, sponsor:sponsor_id(*)')
-      .eq('code', inviteCode.trim().toUpperCase())
-      .maybeSingle();
+    const trimmedCode = inviteCode.trim().toUpperCase();
 
-    if (fetchError || !invite) {
-      Alert.alert('Error', 'Invalid or expired invite code');
+    if (trimmedCode.length !== 8) {
+      if (Platform.OS === 'web') {
+        window.alert('Invite code must be 8 characters');
+      } else {
+        Alert.alert('Error', 'Invite code must be 8 characters');
+      }
       return;
     }
 
-    if (new Date(invite.expires_at) < new Date()) {
-      Alert.alert('Error', 'This invite code has expired');
-      return;
-    }
+    setIsConnecting(true);
 
-    if (invite.used_by) {
-      Alert.alert('Error', 'This invite code has already been used');
-      return;
-    }
+    try {
+      const { data: invite, error: fetchError } = await supabase
+        .from('invite_codes')
+        .select('*, sponsor:sponsor_id(*)')
+        .eq('code', trimmedCode)
+        .maybeSingle();
 
-    const { error: relationshipError } = await supabase.from('sponsor_sponsee_relationships').insert({
-      sponsor_id: invite.sponsor_id,
-      sponsee_id: profile.id,
-      status: 'active',
-    });
+      if (fetchError || !invite) {
+        if (Platform.OS === 'web') {
+          window.alert('Invalid or expired invite code');
+        } else {
+          Alert.alert('Error', 'Invalid or expired invite code');
+        }
+        setIsConnecting(false);
+        return;
+      }
 
-    if (relationshipError) {
-      Alert.alert('Error', 'Failed to connect with sponsor');
-      return;
-    }
+      if (new Date(invite.expires_at) < new Date()) {
+        if (Platform.OS === 'web') {
+          window.alert('This invite code has expired');
+        } else {
+          Alert.alert('Error', 'This invite code has expired');
+        }
+        setIsConnecting(false);
+        return;
+      }
 
-    const { error: updateError } = await supabase
-      .from('invite_codes')
-      .update({ used_by: profile.id, used_at: new Date().toISOString() })
-      .eq('id', invite.id);
+      if (invite.used_by) {
+        if (Platform.OS === 'web') {
+          window.alert('This invite code has already been used');
+        } else {
+          Alert.alert('Error', 'This invite code has already been used');
+        }
+        setIsConnecting(false);
+        return;
+      }
 
-    if (!updateError) {
-      Alert.alert('Success', `Connected with ${invite.sponsor?.first_name} ${invite.sponsor?.last_initial}.!`);
+      if (invite.sponsor_id === profile.id) {
+        if (Platform.OS === 'web') {
+          window.alert('You cannot connect to yourself as a sponsor');
+        } else {
+          Alert.alert('Error', 'You cannot connect to yourself as a sponsor');
+        }
+        setIsConnecting(false);
+        return;
+      }
+
+      const { data: existingRelationship } = await supabase
+        .from('sponsor_sponsee_relationships')
+        .select('id')
+        .eq('sponsor_id', invite.sponsor_id)
+        .eq('sponsee_id', profile.id)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (existingRelationship) {
+        if (Platform.OS === 'web') {
+          window.alert('You are already connected to this sponsor');
+        } else {
+          Alert.alert('Error', 'You are already connected to this sponsor');
+        }
+        setIsConnecting(false);
+        return;
+      }
+
+      const { error: relationshipError } = await supabase.from('sponsor_sponsee_relationships').insert({
+        sponsor_id: invite.sponsor_id,
+        sponsee_id: profile.id,
+        status: 'active',
+      });
+
+      if (relationshipError) {
+        if (Platform.OS === 'web') {
+          window.alert('Failed to connect with sponsor. Please try again.');
+        } else {
+          Alert.alert('Error', 'Failed to connect with sponsor. Please try again.');
+        }
+        setIsConnecting(false);
+        return;
+      }
+
+      const { error: updateError } = await supabase
+        .from('invite_codes')
+        .update({ used_by: profile.id, used_at: new Date().toISOString() })
+        .eq('id', invite.id);
+
+      if (updateError) {
+        console.error('Error updating invite code:', updateError);
+      }
+
+      await supabase.from('notifications').insert([
+        {
+          user_id: invite.sponsor_id,
+          type: 'connection_request',
+          title: 'New Sponsee Connected',
+          content: `${profile.first_name} ${profile.last_initial}. has connected with you as their sponsor.`,
+          data: { sponsee_id: profile.id },
+        },
+        {
+          user_id: profile.id,
+          type: 'connection_request',
+          title: 'Connected to Sponsor',
+          content: `You are now connected with ${invite.sponsor?.first_name} ${invite.sponsor?.last_initial}. as your sponsor.`,
+          data: { sponsor_id: invite.sponsor_id },
+        },
+      ]);
+
+      await fetchRelationships();
+
+      if (Platform.OS === 'web') {
+        window.alert(`Connected with ${invite.sponsor?.first_name} ${invite.sponsor?.last_initial}.`);
+      } else {
+        Alert.alert('Success', `Connected with ${invite.sponsor?.first_name} ${invite.sponsor?.last_initial}.`);
+      }
+
       setShowInviteInput(false);
       setInviteCode('');
+    } catch (error: any) {
+      console.error('Error joining with invite code:', error);
+      if (Platform.OS === 'web') {
+        window.alert('Network error. Please check your connection and try again.');
+      } else {
+        Alert.alert('Error', 'Network error. Please check your connection and try again.');
+      }
+    } finally {
+      setIsConnecting(false);
     }
   };
 
@@ -131,6 +263,73 @@ export default function ProfileScreen() {
       setNotificationSettings(notificationSettings);
     } else {
       await refreshProfile();
+    }
+  };
+
+  const disconnectRelationship = async (relationshipId: string, isSponsor: boolean, otherUserName: string) => {
+    const confirmMessage = isSponsor
+      ? `Are you sure you want to disconnect from ${otherUserName}? This will end your sponsee relationship.`
+      : `Are you sure you want to disconnect from ${otherUserName}? This will end your sponsor relationship.`;
+
+    const confirmed = Platform.OS === 'web'
+      ? window.confirm(confirmMessage)
+      : await new Promise<boolean>((resolve) => {
+          Alert.alert(
+            'Confirm Disconnection',
+            confirmMessage,
+            [
+              { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+              { text: 'Disconnect', style: 'destructive', onPress: () => resolve(true) },
+            ]
+          );
+        });
+
+    if (!confirmed) return;
+
+    try {
+      const { error } = await supabase
+        .from('sponsor_sponsee_relationships')
+        .update({
+          status: 'inactive',
+          disconnected_at: new Date().toISOString(),
+        })
+        .eq('id', relationshipId);
+
+      if (error) throw error;
+
+      const relationship = isSponsor
+        ? sponseeRelationships.find(r => r.id === relationshipId)
+        : sponsorRelationships.find(r => r.id === relationshipId);
+
+      if (relationship) {
+        const notificationRecipientId = isSponsor ? relationship.sponsee_id : relationship.sponsor_id;
+        const notificationSenderName = `${profile?.first_name} ${profile?.last_initial}.`;
+
+        await supabase.from('notifications').insert([
+          {
+            user_id: notificationRecipientId,
+            type: 'connection_request',
+            title: 'Relationship Ended',
+            content: `${notificationSenderName} has ended the ${isSponsor ? 'sponsorship' : 'sponsee'} relationship.`,
+            data: { relationship_id: relationshipId },
+          },
+        ]);
+      }
+
+      await fetchRelationships();
+
+      if (Platform.OS === 'web') {
+        window.alert('Successfully disconnected');
+      } else {
+        Alert.alert('Success', 'Successfully disconnected');
+      }
+    } catch (error: any) {
+      console.error('Error disconnecting:', error);
+      if (Platform.OS === 'web') {
+        window.alert('Failed to disconnect. Please try again.');
+      } else {
+        Alert.alert('Error', 'Failed to disconnect. Please try again.');
+      }
     }
   };
 
@@ -192,39 +391,140 @@ export default function ProfileScreen() {
 
       {(profile?.role === 'sponsor' || profile?.role === 'both') && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Sponsor Tools</Text>
-          <TouchableOpacity style={styles.actionButton} onPress={generateInviteCode}>
-            <Share2 size={20} color={theme.primary} />
-            <Text style={styles.actionButtonText}>Generate Invite Code</Text>
-          </TouchableOpacity>
+          <Text style={styles.sectionTitle}>Your Sponsees</Text>
+          {loadingRelationships ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color={theme.primary} />
+            </View>
+          ) : sponseeRelationships.length > 0 ? (
+            <>
+              {sponseeRelationships.map((rel) => (
+                <View key={rel.id} style={styles.relationshipCard}>
+                  <View style={styles.relationshipHeader}>
+                    <View style={styles.avatar}>
+                      <Text style={styles.avatarText}>
+                        {(rel.sponsee?.first_name || '?')[0].toUpperCase()}
+                      </Text>
+                    </View>
+                    <View style={styles.relationshipInfo}>
+                      <Text style={styles.relationshipName}>{rel.sponsee?.first_name} {rel.sponsee?.last_initial}.</Text>
+                      <Text style={styles.relationshipMeta}>
+                        Connected {new Date(rel.connected_at).toLocaleDateString()}
+                      </Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.disconnectButton}
+                    onPress={() => disconnectRelationship(rel.id, true, `${rel.sponsee?.first_name} ${rel.sponsee?.last_initial}.`)}
+                  >
+                    <UserMinus size={18} color="#ef4444" />
+                    <Text style={styles.disconnectText}>Disconnect</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+              <TouchableOpacity style={styles.actionButton} onPress={generateInviteCode}>
+                <Share2 size={20} color={theme.primary} />
+                <Text style={styles.actionButtonText}>Generate New Invite Code</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <View>
+              <Text style={styles.emptyStateText}>No sponsees yet. Generate an invite code to get started.</Text>
+              <TouchableOpacity style={styles.actionButton} onPress={generateInviteCode}>
+                <Share2 size={20} color={theme.primary} />
+                <Text style={styles.actionButtonText}>Generate Invite Code</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       )}
 
       {(profile?.role === 'sponsee' || profile?.role === 'both') && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Connect with Sponsor</Text>
-          {!showInviteInput ? (
-            <TouchableOpacity style={styles.actionButton} onPress={() => setShowInviteInput(true)}>
-              <QrCode size={20} color={theme.primary} />
-              <Text style={styles.actionButtonText}>Enter Invite Code</Text>
-            </TouchableOpacity>
+          <Text style={styles.sectionTitle}>Your Sponsor</Text>
+          {loadingRelationships ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color={theme.primary} />
+            </View>
+          ) : sponsorRelationships.length > 0 ? (
+            sponsorRelationships.map((rel) => (
+              <View key={rel.id} style={styles.relationshipCard}>
+                <View style={styles.relationshipHeader}>
+                  <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>
+                      {(rel.sponsor?.first_name || '?')[0].toUpperCase()}
+                    </Text>
+                  </View>
+                  <View style={styles.relationshipInfo}>
+                    <Text style={styles.relationshipName}>{rel.sponsor?.first_name} {rel.sponsor?.last_initial}.</Text>
+                    <Text style={styles.relationshipMeta}>
+                      Connected {new Date(rel.connected_at).toLocaleDateString()}
+                    </Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  style={styles.disconnectButton}
+                  onPress={() => disconnectRelationship(rel.id, false, `${rel.sponsor?.first_name} ${rel.sponsor?.last_initial}.`)}
+                >
+                  <UserMinus size={18} color="#ef4444" />
+                  <Text style={styles.disconnectText}>Disconnect</Text>
+                </TouchableOpacity>
+              </View>
+            ))
           ) : (
-            <View style={styles.inviteInputContainer}>
-              <TextInput
-                style={styles.inviteInput}
-                placeholder="Enter invite code"
-                value={inviteCode}
-                onChangeText={setInviteCode}
-                autoCapitalize="characters"
-              />
-              <TouchableOpacity style={styles.inviteSubmitButton} onPress={joinWithInviteCode}>
-                <Text style={styles.inviteSubmitText}>Connect</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.inviteCancelButton} onPress={() => setShowInviteInput(false)}>
-                <Text style={styles.inviteCancelText}>Cancel</Text>
-              </TouchableOpacity>
+            <View>
+              <Text style={styles.emptyStateText}>No sponsor connected yet</Text>
+              {!showInviteInput ? (
+                <TouchableOpacity style={styles.actionButton} onPress={() => setShowInviteInput(true)}>
+                  <QrCode size={20} color={theme.primary} />
+                  <Text style={styles.actionButtonText}>Enter Invite Code</Text>
+                </TouchableOpacity>
+              ) : (
+                <View style={styles.inviteInputContainer}>
+                  <TextInput
+                    style={styles.inviteInput}
+                    placeholder="Enter 8-character code"
+                    placeholderTextColor={theme.textTertiary}
+                    value={inviteCode}
+                    onChangeText={setInviteCode}
+                    autoCapitalize="characters"
+                    maxLength={8}
+                    editable={!isConnecting}
+                  />
+                  <TouchableOpacity
+                    style={[styles.inviteSubmitButton, isConnecting && styles.buttonDisabled]}
+                    onPress={joinWithInviteCode}
+                    disabled={isConnecting}
+                  >
+                    {isConnecting ? (
+                      <ActivityIndicator size="small" color="#ffffff" />
+                    ) : (
+                      <Text style={styles.inviteSubmitText}>Connect</Text>
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.inviteCancelButton}
+                    onPress={() => {
+                      setShowInviteInput(false);
+                      setInviteCode('');
+                    }}
+                    disabled={isConnecting}
+                  >
+                    <Text style={styles.inviteCancelText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
           )}
+        </View>
+      )}
+
+      {(profile?.role === 'sponsor' || profile?.role === 'both') && sponsorRelationships.length > 0 && !showInviteInput && (
+        <View style={styles.section}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => setShowInviteInput(true)}>
+            <QrCode size={20} color={theme.primary} />
+            <Text style={styles.actionButtonText}>Connect to Another Sponsor</Text>
+          </TouchableOpacity>
         </View>
       )}
 
@@ -593,5 +893,70 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   themeOptionTextSelected: {
     color: theme.primary,
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  relationshipCard: {
+    backgroundColor: theme.card,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    shadowColor: theme.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  relationshipHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  relationshipInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  relationshipName: {
+    fontSize: 16,
+    fontFamily: theme.fontRegular,
+    fontWeight: '600',
+    color: theme.text,
+  },
+  relationshipMeta: {
+    fontSize: 14,
+    fontFamily: theme.fontRegular,
+    color: theme.textSecondary,
+    marginTop: 2,
+  },
+  disconnectButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#fee2e2',
+    backgroundColor: '#fef2f2',
+  },
+  disconnectText: {
+    fontSize: 14,
+    fontFamily: theme.fontRegular,
+    fontWeight: '600',
+    color: '#ef4444',
+    marginLeft: 6,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    fontFamily: theme.fontRegular,
+    color: theme.textSecondary,
+    textAlign: 'center',
+    marginBottom: 16,
+    paddingVertical: 8,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
 });

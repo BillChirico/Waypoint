@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, RefreshControl, Alert, Platform } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/lib/supabase';
 import { SponsorSponseeRelationship, Task } from '@/types/database';
-import { Heart, Calendar, TrendingUp, CheckCircle, Users, Award } from 'lucide-react-native';
+import { Heart, CheckCircle, Users, Award, UserMinus } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
 export default function HomeScreen() {
@@ -51,6 +51,68 @@ export default function HomeScreen() {
     setRefreshing(true);
     await fetchData();
     setRefreshing(false);
+  };
+
+  const handleDisconnect = async (relationshipId: string, isSponsor: boolean, otherUserName: string) => {
+    const confirmMessage = isSponsor
+      ? `Disconnect from ${otherUserName}? This will end the sponsee relationship.`
+      : `Disconnect from ${otherUserName}? This will end the sponsor relationship.`;
+
+    const confirmed = Platform.OS === 'web'
+      ? window.confirm(confirmMessage)
+      : await new Promise<boolean>((resolve) => {
+          Alert.alert(
+            'Confirm Disconnection',
+            confirmMessage,
+            [
+              { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+              { text: 'Disconnect', style: 'destructive', onPress: () => resolve(true) },
+            ]
+          );
+        });
+
+    if (!confirmed) return;
+
+    try {
+      const { error } = await supabase
+        .from('sponsor_sponsee_relationships')
+        .update({
+          status: 'inactive',
+          disconnected_at: new Date().toISOString(),
+        })
+        .eq('id', relationshipId);
+
+      if (error) throw error;
+
+      const relationship = relationships.find(r => r.id === relationshipId);
+      if (relationship && profile) {
+        const notificationRecipientId = isSponsor ? relationship.sponsee_id : relationship.sponsor_id;
+        const notificationSenderName = `${profile.first_name} ${profile.last_initial}.`;
+
+        await supabase.from('notifications').insert([{
+          user_id: notificationRecipientId,
+          type: 'connection_request',
+          title: 'Relationship Ended',
+          content: `${notificationSenderName} has ended the ${isSponsor ? 'sponsorship' : 'sponsee'} relationship.`,
+          data: { relationship_id: relationshipId },
+        }]);
+      }
+
+      await fetchData();
+
+      if (Platform.OS === 'web') {
+        window.alert('Successfully disconnected');
+      } else {
+        Alert.alert('Success', 'Successfully disconnected');
+      }
+    } catch (error: any) {
+      console.error('Error disconnecting:', error);
+      if (Platform.OS === 'web') {
+        window.alert('Failed to disconnect. Please try again.');
+      } else {
+        Alert.alert('Error', 'Failed to disconnect. Please try again.');
+      }
+    }
   };
 
   const getDaysSober = () => {
@@ -108,7 +170,7 @@ export default function HomeScreen() {
       {profile?.role === 'sponsee' && relationships.length > 0 && (
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <Users size={24} color="#374151" />
+            <Users size={24} color={theme.textSecondary} />
             <Text style={styles.cardTitle}>Your Sponsor</Text>
           </View>
           {relationships.map((rel) => (
@@ -124,6 +186,12 @@ export default function HomeScreen() {
                   Connected {new Date(rel.connected_at).toLocaleDateString()}
                 </Text>
               </View>
+              <TouchableOpacity
+                style={styles.disconnectButton}
+                onPress={() => handleDisconnect(rel.id, false, `${rel.sponsor?.first_name} ${rel.sponsor?.last_initial}.`)}
+              >
+                <UserMinus size={16} color="#ef4444" />
+              </TouchableOpacity>
             </View>
           ))}
         </View>
@@ -132,7 +200,7 @@ export default function HomeScreen() {
       {(profile?.role === 'sponsor' || profile?.role === 'both') && (
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <Users size={24} color="#374151" />
+            <Users size={24} color={theme.textSecondary} />
             <Text style={styles.cardTitle}>Your Sponsees</Text>
           </View>
           {relationships.length === 0 ? (
@@ -151,6 +219,12 @@ export default function HomeScreen() {
                     Connected {new Date(rel.connected_at).toLocaleDateString()}
                   </Text>
                 </View>
+                <TouchableOpacity
+                  style={styles.disconnectButton}
+                  onPress={() => handleDisconnect(rel.id, true, `${rel.sponsee?.first_name} ${rel.sponsee?.last_initial}.`)}
+                >
+                  <UserMinus size={16} color="#ef4444" />
+                </TouchableOpacity>
               </View>
             ))
           )}
@@ -196,7 +270,7 @@ export default function HomeScreen() {
   );
 }
 
-const { BookOpen, MessageCircle } = require('lucide-react-native');
+import { BookOpen, MessageCircle } from 'lucide-react-native';
 
 const createStyles = (theme: any) => StyleSheet.create({
   container: {
@@ -425,5 +499,12 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontFamily: theme.fontRegular,
     color: '#6b7280',
     marginTop: 4,
+  },
+  disconnectButton: {
+    padding: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#fee2e2',
+    backgroundColor: '#fef2f2',
   },
 });
