@@ -395,10 +395,7 @@ Authenticate using Google account.
 const { data, error } = await supabase.auth.signInWithOAuth({
   provider: 'google',
   options: {
-    redirectTo:
-      Platform.OS === 'web'
-        ? window.location.origin
-        : '12stepstracker://auth/callback',
+    redirectTo: Platform.OS === 'web' ? window.location.origin : '12stepstracker://auth/callback',
   },
 });
 
@@ -475,11 +472,7 @@ subscription.unsubscribe();
 #### Get Single Record
 
 ```typescript
-const { data, error } = await supabase
-  .from('profiles')
-  .select('*')
-  .eq('id', userId)
-  .single();
+const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
 ```
 
 #### Get Multiple Records
@@ -511,7 +504,7 @@ const { data, error } = await supabase
       first_name,
       last_initial
     )
-  `,
+  `
   )
   .eq('sponsee_id', userId);
 ```
@@ -603,11 +596,7 @@ const { data, error } = await supabase
 ### Delete
 
 ```typescript
-const { error } = await supabase
-  .from('tasks')
-  .delete()
-  .eq('id', taskId)
-  .eq('sponsor_id', userId); // Ensure user owns the task
+const { error } = await supabase.from('tasks').delete().eq('id', taskId).eq('sponsor_id', userId); // Ensure user owns the task
 ```
 
 ---
@@ -713,7 +702,7 @@ const { data: relationships, error } = await supabase
       sobriety_date,
       role
     )
-  `,
+  `
   )
   .eq('sponsor_id', userId)
   .eq('status', 'active');
@@ -735,7 +724,7 @@ const { data: relationship, error } = await supabase
       phone,
       bio
     )
-  `,
+  `
   )
   .eq('sponsee_id', userId)
   .eq('status', 'active')
@@ -757,7 +746,7 @@ const { data: tasks, error } = await supabase
       first_name,
       last_initial
     )
-  `,
+  `
   )
   .eq('sponsee_id', userId)
   .order('due_date', { ascending: true, nullsFirst: false })
@@ -780,7 +769,7 @@ const { data: tasks, error } = await supabase
       last_initial,
       sobriety_date
     )
-  `,
+  `
   )
   .eq('sponsor_id', userId)
   .order('created_at', { ascending: false });
@@ -821,7 +810,7 @@ const { data: messages, error } = await supabase
     *,
     sender:sender_id (id, first_name, last_initial),
     recipient:recipient_id (id, first_name, last_initial)
-  `,
+  `
   )
   .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
   .or(`sender_id.eq.${otherUserId},recipient_id.eq.${otherUserId}`)
@@ -931,11 +920,7 @@ interface SupabaseError {
 #### Check for Errors
 
 ```typescript
-const { data, error } = await supabase
-  .from('profiles')
-  .select('*')
-  .eq('id', userId)
-  .single();
+const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
 
 if (error) {
   console.error('Database error:', error.message);
@@ -951,11 +936,7 @@ console.log(data);
 
 ```typescript
 try {
-  const { data, error } = await supabase
-    .from('tasks')
-    .insert(newTask)
-    .select()
-    .single();
+  const { data, error } = await supabase.from('tasks').insert(newTask).select().single();
 
   if (error) throw error;
 
@@ -1007,10 +988,7 @@ if (error) {
 ```typescript
 import { Task, Profile } from '@/types/database';
 
-const { data, error } = await supabase
-  .from('tasks')
-  .select('*')
-  .returns<Task[]>();
+const { data, error } = await supabase.from('tasks').select('*').returns<Task[]>();
 ```
 
 ### 3. Optimize Queries with Specific Selects
@@ -1024,11 +1002,7 @@ const { data } = await supabase
   .single();
 
 // Avoid - selecting all fields when not needed
-const { data } = await supabase
-  .from('profiles')
-  .select('*')
-  .eq('id', userId)
-  .single();
+const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
 ```
 
 ### 4. Use Joins for Related Data
@@ -1043,10 +1017,7 @@ const { data } = await supabase
 // Avoid - multiple queries
 const { data: tasks } = await supabase.from('tasks').select('*');
 for (const task of tasks) {
-  const { data: sponsor } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', task.sponsor_id);
+  const { data: sponsor } = await supabase.from('profiles').select('*').eq('id', task.sponsor_id);
 }
 ```
 

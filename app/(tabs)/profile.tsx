@@ -51,9 +51,7 @@ export default function ProfileScreen() {
     daily: profile?.notification_preferences?.daily ?? true,
   });
   const [showSobrietyDatePicker, setShowSobrietyDatePicker] = useState(false);
-  const [selectedSobrietyDate, setSelectedSobrietyDate] = useState<Date>(
-    new Date(),
-  );
+  const [selectedSobrietyDate, setSelectedSobrietyDate] = useState<Date>(new Date());
   const [showSlipUpModal, setShowSlipUpModal] = useState(false);
   const [slipUpDate, setSlipUpDate] = useState<Date>(new Date());
   const [recoveryDate, setRecoveryDate] = useState<Date>(new Date());
@@ -90,8 +88,7 @@ export default function ProfileScreen() {
         asSponsor &&
         asSponsor.length > 0
       ) {
-        const stats: { [key: string]: { total: number; completed: number } } =
-          {};
+        const stats: { [key: string]: { total: number; completed: number } } = {};
 
         for (const rel of asSponsor) {
           const { data: tasks } = await supabase
@@ -100,8 +97,7 @@ export default function ProfileScreen() {
             .eq('sponsee_id', rel.sponsee_id);
 
           const total = tasks?.length || 0;
-          const completed =
-            tasks?.filter((t) => t.status === 'completed').length || 0;
+          const completed = tasks?.filter(t => t.status === 'completed').length || 0;
           stats[rel.sponsee_id] = { total, completed };
         }
 
@@ -148,7 +144,7 @@ export default function ProfileScreen() {
     } else {
       if (Platform.OS === 'web') {
         const shouldShare = window.confirm(
-          `Your invite code is: ${code}\n\nShare this with your sponsee to connect.\n\nClick OK to copy to clipboard.`,
+          `Your invite code is: ${code}\n\nShare this with your sponsee to connect.\n\nClick OK to copy to clipboard.`
         );
         if (shouldShare) {
           navigator.clipboard.writeText(code);
@@ -167,7 +163,7 @@ export default function ProfileScreen() {
                 }),
             },
             { text: 'OK' },
-          ],
+          ]
         );
       }
     }
@@ -283,8 +279,7 @@ export default function ProfileScreen() {
       if (relationshipError) {
         console.error('Relationship creation error:', relationshipError);
         const errorMessage =
-          relationshipError.message ||
-          'Failed to connect with sponsor. Please try again.';
+          relationshipError.message || 'Failed to connect with sponsor. Please try again.';
         if (Platform.OS === 'web') {
           window.alert(`Failed to connect: ${errorMessage}`);
         } else {
@@ -323,13 +318,11 @@ export default function ProfileScreen() {
       await fetchRelationships();
 
       if (Platform.OS === 'web') {
-        window.alert(
-          `Connected with ${sponsorProfile.first_name} ${sponsorProfile.last_initial}.`,
-        );
+        window.alert(`Connected with ${sponsorProfile.first_name} ${sponsorProfile.last_initial}.`);
       } else {
         Alert.alert(
           'Success',
-          `Connected with ${sponsorProfile.first_name} ${sponsorProfile.last_initial}.`,
+          `Connected with ${sponsorProfile.first_name} ${sponsorProfile.last_initial}.`
         );
       }
 
@@ -338,14 +331,9 @@ export default function ProfileScreen() {
     } catch (error: any) {
       console.error('Error joining with invite code:', error);
       if (Platform.OS === 'web') {
-        window.alert(
-          'Network error. Please check your connection and try again.',
-        );
+        window.alert('Network error. Please check your connection and try again.');
       } else {
-        Alert.alert(
-          'Error',
-          'Network error. Please check your connection and try again.',
-        );
+        Alert.alert('Error', 'Network error. Please check your connection and try again.');
       }
     } finally {
       setIsConnecting(false);
@@ -374,7 +362,7 @@ export default function ProfileScreen() {
   const disconnectRelationship = async (
     relationshipId: string,
     isSponsor: boolean,
-    otherUserName: string,
+    otherUserName: string
   ) => {
     const confirmMessage = isSponsor
       ? `Are you sure you want to disconnect from ${otherUserName}? This will end your sponsee relationship.`
@@ -383,7 +371,7 @@ export default function ProfileScreen() {
     const confirmed =
       Platform.OS === 'web'
         ? window.confirm(confirmMessage)
-        : await new Promise<boolean>((resolve) => {
+        : await new Promise<boolean>(resolve => {
             Alert.alert('Confirm Disconnection', confirmMessage, [
               {
                 text: 'Cancel',
@@ -412,8 +400,8 @@ export default function ProfileScreen() {
       if (error) throw error;
 
       const relationship = isSponsor
-        ? sponseeRelationships.find((r) => r.id === relationshipId)
-        : sponsorRelationships.find((r) => r.id === relationshipId);
+        ? sponseeRelationships.find(r => r.id === relationshipId)
+        : sponsorRelationships.find(r => r.id === relationshipId);
 
       if (relationship) {
         const notificationRecipientId = isSponsor
@@ -478,7 +466,7 @@ export default function ProfileScreen() {
     const confirmed =
       Platform.OS === 'web'
         ? window.confirm(confirmMessage)
-        : await new Promise<boolean>((resolve) => {
+        : await new Promise<boolean>(resolve => {
             Alert.alert('Confirm Date Change', confirmMessage, [
               {
                 text: 'Cancel',
@@ -541,14 +529,9 @@ export default function ProfileScreen() {
 
     if (recoveryDate < slipUpDate) {
       if (Platform.OS === 'web') {
-        window.alert(
-          'Recovery restart date must be on or after the slip up date',
-        );
+        window.alert('Recovery restart date must be on or after the slip up date');
       } else {
-        Alert.alert(
-          'Invalid Date',
-          'Recovery restart date must be on or after the slip up date',
-        );
+        Alert.alert('Invalid Date', 'Recovery restart date must be on or after the slip up date');
       }
       return;
     }
@@ -559,7 +542,7 @@ export default function ProfileScreen() {
     const confirmed =
       Platform.OS === 'web'
         ? window.confirm(confirmMessage)
-        : await new Promise<boolean>((resolve) => {
+        : await new Promise<boolean>(resolve => {
             Alert.alert('Confirm Slip Up Log', confirmMessage, [
               {
                 text: 'Cancel',
@@ -602,7 +585,7 @@ export default function ProfileScreen() {
         .eq('status', 'active');
 
       if (sponsors && sponsors.length > 0) {
-        const notifications = sponsors.map((rel) => ({
+        const notifications = sponsors.map(rel => ({
           user_id: rel.sponsor_id,
           type: 'milestone',
           title: 'Sponsee Slip Up',
@@ -621,12 +604,12 @@ export default function ProfileScreen() {
 
       if (Platform.OS === 'web') {
         window.alert(
-          'Your slip up has been logged. Remember, recovery is a journey. You are brave for being honest. Keep moving forward, one day at a time.',
+          'Your slip up has been logged. Remember, recovery is a journey. You are brave for being honest. Keep moving forward, one day at a time.'
         );
       } else {
         Alert.alert(
           'Slip Up Logged',
-          'Your slip up has been logged. Remember, recovery is a journey. You are brave for being honest. Keep moving forward, one day at a time.',
+          'Your slip up has been logged. Remember, recovery is a journey. You are brave for being honest. Keep moving forward, one day at a time.'
         );
       }
     } catch (error: any) {
@@ -675,9 +658,7 @@ export default function ProfileScreen() {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {profile?.first_name?.[0]?.toUpperCase() || '?'}
-          </Text>
+          <Text style={styles.avatarText}>{profile?.first_name?.[0]?.toUpperCase() || '?'}</Text>
         </View>
         <Text style={styles.name}>
           {profile?.first_name} {profile?.last_initial}.
@@ -694,15 +675,13 @@ export default function ProfileScreen() {
         <View style={styles.sobrietyDateContainer}>
           <Text style={styles.sobrietyDate}>
             Since{' '}
-            {new Date(profile?.sobriety_date || '').toLocaleDateString(
-              'en-US',
-              { month: 'long', day: 'numeric', year: 'numeric' },
-            )}
+            {new Date(profile?.sobriety_date || '').toLocaleDateString('en-US', {
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric',
+            })}
           </Text>
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={handleEditSobrietyDate}
-          >
+          <TouchableOpacity style={styles.editButton} onPress={handleEditSobrietyDate}>
             <Edit2 size={16} color={theme.primary} />
           </TouchableOpacity>
         </View>
@@ -720,12 +699,11 @@ export default function ProfileScreen() {
           </View>
         ) : sponseeRelationships.length > 0 ? (
           <>
-            {sponseeRelationships.map((rel) => {
+            {sponseeRelationships.map(rel => {
               const daysSober = rel.sponsee?.sobriety_date
                 ? Math.floor(
-                    (new Date().getTime() -
-                      new Date(rel.sponsee.sobriety_date).getTime()) /
-                      (1000 * 60 * 60 * 24),
+                    (new Date().getTime() - new Date(rel.sponsee.sobriety_date).getTime()) /
+                      (1000 * 60 * 60 * 24)
                   )
                 : 0;
               return (
@@ -741,19 +719,12 @@ export default function ProfileScreen() {
                         {rel.sponsee?.first_name} {rel.sponsee?.last_initial}.
                       </Text>
                       <Text style={styles.relationshipMeta}>
-                        Connected{' '}
-                        {new Date(rel.connected_at).toLocaleDateString()}
+                        Connected {new Date(rel.connected_at).toLocaleDateString()}
                       </Text>
                       {rel.sponsee?.sobriety_date && (
                         <View style={styles.sobrietyInfo}>
-                          <Heart
-                            size={14}
-                            color={theme.primary}
-                            fill={theme.primary}
-                          />
-                          <Text style={styles.sobrietyText}>
-                            {daysSober} days sober
-                          </Text>
+                          <Heart size={14} color={theme.primary} fill={theme.primary} />
+                          <Text style={styles.sobrietyText}>{daysSober} days sober</Text>
                         </View>
                       )}
                       {sponseeTaskStats[rel.sponsee_id] && (
@@ -761,8 +732,7 @@ export default function ProfileScreen() {
                           <CheckCircle size={14} color="#10b981" />
                           <Text style={styles.taskStatsText}>
                             {sponseeTaskStats[rel.sponsee_id].completed}/
-                            {sponseeTaskStats[rel.sponsee_id].total} tasks
-                            completed
+                            {sponseeTaskStats[rel.sponsee_id].total} tasks completed
                           </Text>
                         </View>
                       )}
@@ -774,7 +744,7 @@ export default function ProfileScreen() {
                       disconnectRelationship(
                         rel.id,
                         true,
-                        `${rel.sponsee?.first_name} ${rel.sponsee?.last_initial}.`,
+                        `${rel.sponsee?.first_name} ${rel.sponsee?.last_initial}.`
                       )
                     }
                   >
@@ -784,14 +754,9 @@ export default function ProfileScreen() {
                 </View>
               );
             })}
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={generateInviteCode}
-            >
+            <TouchableOpacity style={styles.actionButton} onPress={generateInviteCode}>
               <Share2 size={20} color={theme.primary} />
-              <Text style={styles.actionButtonText}>
-                Generate New Invite Code
-              </Text>
+              <Text style={styles.actionButtonText}>Generate New Invite Code</Text>
             </TouchableOpacity>
           </>
         ) : (
@@ -799,10 +764,7 @@ export default function ProfileScreen() {
             <Text style={styles.emptyStateText}>
               No sponsees yet. Generate an invite code to get started.
             </Text>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={generateInviteCode}
-            >
+            <TouchableOpacity style={styles.actionButton} onPress={generateInviteCode}>
               <Share2 size={20} color={theme.primary} />
               <Text style={styles.actionButtonText}>Generate Invite Code</Text>
             </TouchableOpacity>
@@ -817,12 +779,11 @@ export default function ProfileScreen() {
             <ActivityIndicator size="small" color={theme.primary} />
           </View>
         ) : sponsorRelationships.length > 0 ? (
-          sponsorRelationships.map((rel) => {
+          sponsorRelationships.map(rel => {
             const daysSober = rel.sponsor?.sobriety_date
               ? Math.floor(
-                  (new Date().getTime() -
-                    new Date(rel.sponsor.sobriety_date).getTime()) /
-                    (1000 * 60 * 60 * 24),
+                  (new Date().getTime() - new Date(rel.sponsor.sobriety_date).getTime()) /
+                    (1000 * 60 * 60 * 24)
                 )
               : 0;
             return (
@@ -838,19 +799,12 @@ export default function ProfileScreen() {
                       {rel.sponsor?.first_name} {rel.sponsor?.last_initial}.
                     </Text>
                     <Text style={styles.relationshipMeta}>
-                      Connected{' '}
-                      {new Date(rel.connected_at).toLocaleDateString()}
+                      Connected {new Date(rel.connected_at).toLocaleDateString()}
                     </Text>
                     {rel.sponsor?.sobriety_date && (
                       <View style={styles.sobrietyInfo}>
-                        <Heart
-                          size={14}
-                          color={theme.primary}
-                          fill={theme.primary}
-                        />
-                        <Text style={styles.sobrietyText}>
-                          {daysSober} days sober
-                        </Text>
+                        <Heart size={14} color={theme.primary} fill={theme.primary} />
+                        <Text style={styles.sobrietyText}>{daysSober} days sober</Text>
                       </View>
                     )}
                   </View>
@@ -861,7 +815,7 @@ export default function ProfileScreen() {
                     disconnectRelationship(
                       rel.id,
                       false,
-                      `${rel.sponsor?.first_name} ${rel.sponsor?.last_initial}.`,
+                      `${rel.sponsor?.first_name} ${rel.sponsor?.last_initial}.`
                     )
                   }
                 >
@@ -895,10 +849,7 @@ export default function ProfileScreen() {
                   editable={!isConnecting}
                 />
                 <TouchableOpacity
-                  style={[
-                    styles.inviteSubmitButton,
-                    isConnecting && styles.buttonDisabled,
-                  ]}
+                  style={[styles.inviteSubmitButton, isConnecting && styles.buttonDisabled]}
                   onPress={joinWithInviteCode}
                   disabled={isConnecting}
                 >
@@ -926,14 +877,9 @@ export default function ProfileScreen() {
 
       {sponsorRelationships.length > 0 && !showInviteInput && (
         <View style={styles.section}>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => setShowInviteInput(true)}
-          >
+          <TouchableOpacity style={styles.actionButton} onPress={() => setShowInviteInput(true)}>
             <QrCode size={20} color={theme.primary} />
-            <Text style={styles.actionButtonText}>
-              Connect to Another Sponsor
-            </Text>
+            <Text style={styles.actionButtonText}>Connect to Another Sponsor</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -949,18 +895,10 @@ export default function ProfileScreen() {
 
           <View style={styles.themeOptions}>
             <TouchableOpacity
-              style={[
-                styles.themeOption,
-                themeMode === 'light' && styles.themeOptionSelected,
-              ]}
+              style={[styles.themeOption, themeMode === 'light' && styles.themeOptionSelected]}
               onPress={() => setThemeMode('light')}
             >
-              <Sun
-                size={20}
-                color={
-                  themeMode === 'light' ? theme.primary : theme.textSecondary
-                }
-              />
+              <Sun size={20} color={themeMode === 'light' ? theme.primary : theme.textSecondary} />
               <Text
                 style={[
                   styles.themeOptionText,
@@ -972,18 +910,10 @@ export default function ProfileScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.themeOption,
-                themeMode === 'dark' && styles.themeOptionSelected,
-              ]}
+              style={[styles.themeOption, themeMode === 'dark' && styles.themeOptionSelected]}
               onPress={() => setThemeMode('dark')}
             >
-              <Moon
-                size={20}
-                color={
-                  themeMode === 'dark' ? theme.primary : theme.textSecondary
-                }
-              />
+              <Moon size={20} color={themeMode === 'dark' ? theme.primary : theme.textSecondary} />
               <Text
                 style={[
                   styles.themeOptionText,
@@ -995,17 +925,12 @@ export default function ProfileScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.themeOption,
-                themeMode === 'system' && styles.themeOptionSelected,
-              ]}
+              style={[styles.themeOption, themeMode === 'system' && styles.themeOptionSelected]}
               onPress={() => setThemeMode('system')}
             >
               <Monitor
                 size={20}
-                color={
-                  themeMode === 'system' ? theme.primary : theme.textSecondary
-                }
+                color={themeMode === 'system' ? theme.primary : theme.textSecondary}
               />
               <Text
                 style={[
@@ -1029,13 +954,9 @@ export default function ProfileScreen() {
             <Text style={styles.settingSubLabel}>Task assignments</Text>
             <Switch
               value={notificationSettings.tasks}
-              onValueChange={(value) =>
-                updateNotificationSetting('tasks', value)
-              }
+              onValueChange={value => updateNotificationSetting('tasks', value)}
               trackColor={{ false: '#d1d5db', true: '#80c0ff' }}
-              thumbColor={
-                notificationSettings.tasks ? theme.primary : '#f3f4f6'
-              }
+              thumbColor={notificationSettings.tasks ? theme.primary : '#f3f4f6'}
             />
           </View>
 
@@ -1043,13 +964,9 @@ export default function ProfileScreen() {
             <Text style={styles.settingSubLabel}>Messages</Text>
             <Switch
               value={notificationSettings.messages}
-              onValueChange={(value) =>
-                updateNotificationSetting('messages', value)
-              }
+              onValueChange={value => updateNotificationSetting('messages', value)}
               trackColor={{ false: '#d1d5db', true: '#80c0ff' }}
-              thumbColor={
-                notificationSettings.messages ? theme.primary : '#f3f4f6'
-              }
+              thumbColor={notificationSettings.messages ? theme.primary : '#f3f4f6'}
             />
           </View>
 
@@ -1057,13 +974,9 @@ export default function ProfileScreen() {
             <Text style={styles.settingSubLabel}>Milestones</Text>
             <Switch
               value={notificationSettings.milestones}
-              onValueChange={(value) =>
-                updateNotificationSetting('milestones', value)
-              }
+              onValueChange={value => updateNotificationSetting('milestones', value)}
               trackColor={{ false: '#d1d5db', true: '#80c0ff' }}
-              thumbColor={
-                notificationSettings.milestones ? theme.primary : '#f3f4f6'
-              }
+              thumbColor={notificationSettings.milestones ? theme.primary : '#f3f4f6'}
             />
           </View>
 
@@ -1071,13 +984,9 @@ export default function ProfileScreen() {
             <Text style={styles.settingSubLabel}>Daily reminders</Text>
             <Switch
               value={notificationSettings.daily}
-              onValueChange={(value) =>
-                updateNotificationSetting('daily', value)
-              }
+              onValueChange={value => updateNotificationSetting('daily', value)}
               trackColor={{ false: '#d1d5db', true: '#80c0ff' }}
-              thumbColor={
-                notificationSettings.daily ? theme.primary : '#f3f4f6'
-              }
+              thumbColor={notificationSettings.daily ? theme.primary : '#f3f4f6'}
             />
           </View>
         </View>
@@ -1092,25 +1001,15 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>
-          12-Step Tracker v{packageJson.version}
-        </Text>
-        <Text style={styles.footerSubtext}>
-          Supporting recovery, one day at a time
-        </Text>
-        <TouchableOpacity
-          onPress={() => Linking.openURL('https://billchirico.dev')}
-        >
+        <Text style={styles.footerText}>12-Step Tracker v{packageJson.version}</Text>
+        <Text style={styles.footerSubtext}>Supporting recovery, one day at a time</Text>
+        <TouchableOpacity onPress={() => Linking.openURL('https://billchirico.dev')}>
           <Text style={styles.footerCredit}>By Bill Chirico</Text>
         </TouchableOpacity>
       </View>
 
       {Platform.OS === 'web' && showSobrietyDatePicker && (
-        <Modal
-          visible={showSobrietyDatePicker}
-          transparent
-          animationType="fade"
-        >
+        <Modal visible={showSobrietyDatePicker} transparent animationType="fade">
           <View style={styles.modalOverlay}>
             <View style={styles.datePickerModal}>
               <Text style={styles.modalTitle}>Edit Sobriety Date</Text>
@@ -1118,9 +1017,7 @@ export default function ProfileScreen() {
                 type="date"
                 value={selectedSobrietyDate.toISOString().split('T')[0]}
                 max={new Date().toISOString().split('T')[0]}
-                onChange={(e) =>
-                  setSelectedSobrietyDate(new Date(e.target.value))
-                }
+                onChange={e => setSelectedSobrietyDate(new Date(e.target.value))}
                 style={{
                   padding: 12,
                   fontSize: 16,
@@ -1154,11 +1051,7 @@ export default function ProfileScreen() {
       )}
 
       {Platform.OS !== 'web' && showSobrietyDatePicker && (
-        <Modal
-          visible={showSobrietyDatePicker}
-          transparent
-          animationType="slide"
-        >
+        <Modal visible={showSobrietyDatePicker} transparent animationType="slide">
           <View style={styles.modalOverlay}>
             <View style={styles.datePickerModal}>
               <Text style={styles.modalTitle}>Edit Sobriety Date</Text>
@@ -1198,8 +1091,8 @@ export default function ProfileScreen() {
           <View style={styles.slipUpModal}>
             <Text style={styles.modalTitle}>Log a Slip Up</Text>
             <Text style={styles.modalSubtitle}>
-              Recovery is a journey, not a destination. Logging a slip up is an
-              act of courage and honesty.
+              Recovery is a journey, not a destination. Logging a slip up is an act of courage and
+              honesty.
             </Text>
 
             <View style={styles.dateSection}>
@@ -1209,7 +1102,7 @@ export default function ProfileScreen() {
                   type="date"
                   value={slipUpDate.toISOString().split('T')[0]}
                   max={new Date().toISOString().split('T')[0]}
-                  onChange={(e) => setSlipUpDate(new Date(e.target.value))}
+                  onChange={e => setSlipUpDate(new Date(e.target.value))}
                   style={{
                     padding: 12,
                     fontSize: 16,
@@ -1256,7 +1149,7 @@ export default function ProfileScreen() {
                   type="date"
                   value={recoveryDate.toISOString().split('T')[0]}
                   min={slipUpDate.toISOString().split('T')[0]}
-                  onChange={(e) => setRecoveryDate(new Date(e.target.value))}
+                  onChange={e => setRecoveryDate(new Date(e.target.value))}
                   style={{
                     padding: 12,
                     fontSize: 16,

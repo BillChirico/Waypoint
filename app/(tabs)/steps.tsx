@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  Modal,
-} from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -17,9 +10,7 @@ export default function StepsScreen() {
   const { theme } = useTheme();
   const { profile } = useAuth();
   const [steps, setSteps] = useState<StepContent[]>([]);
-  const [progress, setProgress] = useState<Record<number, UserStepProgress>>(
-    {},
-  );
+  const [progress, setProgress] = useState<Record<number, UserStepProgress>>({});
   const [selectedStep, setSelectedStep] = useState<StepContent | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +57,7 @@ export default function StepsScreen() {
         console.error('Error fetching progress:', fetchError);
       } else {
         const progressMap: Record<number, UserStepProgress> = {};
-        data?.forEach((p) => {
+        data?.forEach(p => {
           progressMap[p.step_number] = p;
         });
         setProgress(progressMap);
@@ -144,23 +135,15 @@ export default function StepsScreen() {
         )}
         {!loading &&
           !error &&
-          steps.map((step) => {
+          steps.map(step => {
             const isCompleted = !!progress[step.step_number];
             return (
               <TouchableOpacity
                 key={step.id}
-                style={[
-                  styles.stepCard,
-                  isCompleted && styles.stepCardCompleted,
-                ]}
+                style={[styles.stepCard, isCompleted && styles.stepCardCompleted]}
                 onPress={() => setSelectedStep(step)}
               >
-                <View
-                  style={[
-                    styles.stepNumber,
-                    isCompleted && styles.stepNumberCompleted,
-                  ]}
-                >
+                <View style={[styles.stepNumber, isCompleted && styles.stepNumberCompleted]}>
                   <Text style={styles.stepNumberText}>{step.step_number}</Text>
                 </View>
                 <View style={styles.stepContent}>
@@ -188,9 +171,7 @@ export default function StepsScreen() {
         <View style={styles.modal}>
           <View style={styles.modalHeader}>
             <View style={styles.modalHeaderContent}>
-              <Text style={styles.modalStepNumber}>
-                Step {selectedStep?.step_number}
-              </Text>
+              <Text style={styles.modalStepNumber}>Step {selectedStep?.step_number}</Text>
               <TouchableOpacity onPress={() => setSelectedStep(null)}>
                 <X size={24} color={theme.text} />
               </TouchableOpacity>
@@ -199,16 +180,13 @@ export default function StepsScreen() {
 
           <ScrollView style={styles.modalContent}>
             <Text style={styles.modalTitle}>{selectedStep?.title}</Text>
-            <Text style={styles.modalDescription}>
-              {selectedStep?.description}
-            </Text>
+            <Text style={styles.modalDescription}>{selectedStep?.description}</Text>
 
             {selectedStep && (
               <TouchableOpacity
                 style={[
                   styles.completeButton,
-                  progress[selectedStep.step_number] &&
-                    styles.completeButtonActive,
+                  progress[selectedStep.step_number] && styles.completeButtonActive,
                 ]}
                 onPress={() => {
                   toggleStepCompletion(selectedStep.step_number);
@@ -217,16 +195,12 @@ export default function StepsScreen() {
                 {progress[selectedStep.step_number] ? (
                   <>
                     <CheckCircle size={20} color="#ffffff" />
-                    <Text style={styles.completeButtonText}>
-                      Marked as Complete
-                    </Text>
+                    <Text style={styles.completeButtonText}>Marked as Complete</Text>
                   </>
                 ) : (
                   <>
                     <Circle size={20} color="#ffffff" />
-                    <Text style={styles.completeButtonText}>
-                      Mark as Complete
-                    </Text>
+                    <Text style={styles.completeButtonText}>Mark as Complete</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -234,23 +208,20 @@ export default function StepsScreen() {
 
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Understanding This Step</Text>
-              <Text style={styles.sectionContent}>
-                {selectedStep?.detailed_content}
-              </Text>
+              <Text style={styles.sectionContent}>{selectedStep?.detailed_content}</Text>
             </View>
 
-            {selectedStep?.reflection_prompts &&
-              selectedStep.reflection_prompts.length > 0 && (
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Reflection Questions</Text>
-                  {selectedStep.reflection_prompts.map((prompt, index) => (
-                    <View key={index} style={styles.promptItem}>
-                      <Text style={styles.promptBullet}>•</Text>
-                      <Text style={styles.promptText}>{prompt}</Text>
-                    </View>
-                  ))}
-                </View>
-              )}
+            {selectedStep?.reflection_prompts && selectedStep.reflection_prompts.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Reflection Questions</Text>
+                {selectedStep.reflection_prompts.map((prompt, index) => (
+                  <View key={index} style={styles.promptItem}>
+                    <Text style={styles.promptBullet}>•</Text>
+                    <Text style={styles.promptText}>{prompt}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
           </ScrollView>
         </View>
       </Modal>

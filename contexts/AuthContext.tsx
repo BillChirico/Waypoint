@@ -19,7 +19,7 @@ interface AuthContextType {
     email: string,
     password: string,
     firstName: string,
-    lastInitial: string,
+    lastInitial: string
   ) => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -45,9 +45,7 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -97,9 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const existingProfile = await fetchProfile(session.user.id);
 
         if (!existingProfile) {
-          const nameParts = session.user.user_metadata?.full_name?.split(
-            ' ',
-          ) || ['User', 'U'];
+          const nameParts = session.user.user_metadata?.full_name?.split(' ') || ['User', 'U'];
           const firstName = nameParts[0] || 'User';
           const lastInitial = nameParts[nameParts.length - 1]?.[0] || 'U';
 
@@ -156,10 +152,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       if (error) throw error;
 
       if (data?.url) {
-        const result = await WebBrowser.openAuthSessionAsync(
-          data.url,
-          redirectUrl,
-        );
+        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
 
         if (result.type === 'success' && result.url) {
           const url = new URL(result.url);
@@ -167,11 +160,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           const refresh_token = url.searchParams.get('refresh_token');
 
           if (access_token && refresh_token) {
-            const { data: sessionData, error: sessionError } =
-              await supabase.auth.setSession({
-                access_token,
-                refresh_token,
-              });
+            const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+              access_token,
+              refresh_token,
+            });
 
             if (sessionError) throw sessionError;
 
@@ -183,22 +175,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 .maybeSingle();
 
               if (!existingProfile) {
-                const nameParts =
-                  sessionData.user.user_metadata?.full_name?.split(' ') || [
-                    'User',
-                    'U',
-                  ];
+                const nameParts = sessionData.user.user_metadata?.full_name?.split(' ') || [
+                  'User',
+                  'U',
+                ];
                 const firstName = nameParts[0] || 'User';
                 const lastInitial = nameParts[nameParts.length - 1]?.[0] || 'U';
 
-                const { error: profileError } = await supabase
-                  .from('profiles')
-                  .insert({
-                    id: sessionData.user.id,
-                    email: sessionData.user.email || '',
-                    first_name: firstName,
-                    last_initial: lastInitial.toUpperCase(),
-                  });
+                const { error: profileError } = await supabase.from('profiles').insert({
+                  id: sessionData.user.id,
+                  email: sessionData.user.email || '',
+                  first_name: firstName,
+                  last_initial: lastInitial.toUpperCase(),
+                });
 
                 if (profileError) throw profileError;
               }
@@ -213,7 +202,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     email: string,
     password: string,
     firstName: string,
-    lastInitial: string,
+    lastInitial: string
   ) => {
     const { data, error } = await supabase.auth.signUp({
       email,

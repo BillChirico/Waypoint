@@ -394,10 +394,7 @@ Manually refreshes the user's profile data from the database.
 const { refreshProfile, profile } = useAuth();
 
 // After updating profile in database
-await supabase
-  .from('profiles')
-  .update({ bio: 'Updated bio' })
-  .eq('id', profile.id);
+await supabase.from('profiles').update({ bio: 'Updated bio' }).eq('id', profile.id);
 
 // Refresh to get updated data
 await refreshProfile();
@@ -465,7 +462,7 @@ interface AuthContextType {
     email: string,
     password: string,
     firstName: string,
-    lastInitial: string,
+    lastInitial: string
   ) => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;

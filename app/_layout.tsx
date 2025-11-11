@@ -4,13 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
-import {
-  View,
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  TextInput,
-} from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Text, TextInput } from 'react-native';
 import { useFonts } from 'expo-font';
 import {
   JetBrainsMono_400Regular,
@@ -39,12 +33,7 @@ function RootLayoutNav() {
       router.replace('/login');
     } else if (!user && !inAuthScreen) {
       router.replace('/login');
-    } else if (
-      user &&
-      profile &&
-      profile.role &&
-      (inAuthScreen || inOnboarding)
-    ) {
+    } else if (user && profile && profile.role && (inAuthScreen || inOnboarding)) {
       router.replace('/(tabs)');
     } else if (user && profile && !profile.role && !inOnboarding) {
       router.replace('/onboarding');

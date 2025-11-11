@@ -13,23 +13,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/lib/supabase';
 import { SponsorSponseeRelationship, Task, Profile } from '@/types/database';
-import {
-  Heart,
-  CheckCircle,
-  Users,
-  Award,
-  UserMinus,
-  Plus,
-} from 'lucide-react-native';
+import { Heart, CheckCircle, Users, Award, UserMinus, Plus , BookOpen, ClipboardList } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import TaskCreationModal from '@/components/TaskCreationModal';
+
 
 export default function HomeScreen() {
   const { profile } = useAuth();
   const { theme } = useTheme();
-  const [relationships, setRelationships] = useState<
-    SponsorSponseeRelationship[]
-  >([]);
+  const [relationships, setRelationships] = useState<SponsorSponseeRelationship[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -53,9 +45,7 @@ export default function HomeScreen() {
       .eq('status', 'active');
 
     setRelationships([...(asSponsor || []), ...(asSponsee || [])]);
-    const profiles = (asSponsor || [])
-      .map((rel) => rel.sponsee)
-      .filter(Boolean) as Profile[];
+    const profiles = (asSponsor || []).map(rel => rel.sponsee).filter(Boolean) as Profile[];
     setSponseeProfiles(profiles);
 
     const { data: tasksData } = await supabase
@@ -81,7 +71,7 @@ export default function HomeScreen() {
   const handleDisconnect = async (
     relationshipId: string,
     isSponsor: boolean,
-    otherUserName: string,
+    otherUserName: string
   ) => {
     const confirmMessage = isSponsor
       ? `Disconnect from ${otherUserName}? This will end the sponsee relationship.`
@@ -90,7 +80,7 @@ export default function HomeScreen() {
     const confirmed =
       Platform.OS === 'web'
         ? window.confirm(confirmMessage)
-        : await new Promise<boolean>((resolve) => {
+        : await new Promise<boolean>(resolve => {
             Alert.alert('Confirm Disconnection', confirmMessage, [
               {
                 text: 'Cancel',
@@ -118,7 +108,7 @@ export default function HomeScreen() {
 
       if (error) throw error;
 
-      const relationship = relationships.find((r) => r.id === relationshipId);
+      const relationship = relationships.find(r => r.id === relationshipId);
       if (relationship && profile) {
         const notificationRecipientId = isSponsor
           ? relationship.sponsee_id
@@ -183,17 +173,11 @@ export default function HomeScreen() {
     <ScrollView
       style={styles.container}
       refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={theme.primary}
-        />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
       }
     >
       <View style={styles.header}>
-        <Text style={styles.greeting}>
-          Hello, {profile?.first_name || 'Friend'}
-        </Text>
+        <Text style={styles.greeting}>Hello, {profile?.first_name || 'Friend'}</Text>
         <Text style={styles.date}>
           {new Date().toLocaleDateString('en-US', {
             weekday: 'long',
@@ -210,38 +194,33 @@ export default function HomeScreen() {
             <Text style={styles.sobrietyTitle}>Your Sobriety Journey</Text>
             <Text style={styles.sobrietyDate}>
               Since{' '}
-              {new Date(profile?.sobriety_date || '').toLocaleDateString(
-                'en-US',
-                { month: 'long', day: 'numeric', year: 'numeric' },
-              )}
+              {new Date(profile?.sobriety_date || '').toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })}
             </Text>
           </View>
         </View>
         <View style={styles.daysSoberContainer}>
           <Text style={styles.daysSoberCount}>{daysSober}</Text>
           <Text style={styles.daysSoberLabel}>Days Sober</Text>
-          <View
-            style={[
-              styles.milestoneBadge,
-              { backgroundColor: milestone.color },
-            ]}
-          >
+          <View style={[styles.milestoneBadge, { backgroundColor: milestone.color }]}>
             <Award size={16} color="#ffffff" />
             <Text style={styles.milestoneText}>{milestone.text}</Text>
           </View>
         </View>
       </View>
 
-      {relationships.filter((rel) => rel.sponsor_id !== profile?.id).length >
-        0 && (
+      {relationships.filter(rel => rel.sponsor_id !== profile?.id).length > 0 && (
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <Users size={24} color={theme.textSecondary} />
             <Text style={styles.cardTitle}>Your Sponsor</Text>
           </View>
           {relationships
-            .filter((rel) => rel.sponsor_id !== profile?.id)
-            .map((rel) => (
+            .filter(rel => rel.sponsor_id !== profile?.id)
+            .map(rel => (
               <View key={rel.id} style={styles.relationshipItem}>
                 <View style={styles.avatar}>
                   <Text style={styles.avatarText}>
@@ -262,7 +241,7 @@ export default function HomeScreen() {
                     handleDisconnect(
                       rel.id,
                       false,
-                      `${rel.sponsor?.first_name} ${rel.sponsor?.last_initial}.`,
+                      `${rel.sponsor?.first_name} ${rel.sponsor?.last_initial}.`
                     )
                   }
                 >
@@ -278,15 +257,12 @@ export default function HomeScreen() {
           <Users size={24} color={theme.textSecondary} />
           <Text style={styles.cardTitle}>Your Sponsees</Text>
         </View>
-        {relationships.filter((rel) => rel.sponsor_id === profile?.id)
-          .length === 0 ? (
-          <Text style={styles.emptyText}>
-            No sponsees yet. Share your invite code to connect.
-          </Text>
+        {relationships.filter(rel => rel.sponsor_id === profile?.id).length === 0 ? (
+          <Text style={styles.emptyText}>No sponsees yet. Share your invite code to connect.</Text>
         ) : (
           relationships
-            .filter((rel) => rel.sponsor_id === profile?.id)
-            .map((rel) => (
+            .filter(rel => rel.sponsor_id === profile?.id)
+            .map(rel => (
               <View key={rel.id} style={styles.relationshipItem}>
                 <View style={styles.avatar}>
                   <Text style={styles.avatarText}>
@@ -316,7 +292,7 @@ export default function HomeScreen() {
                     handleDisconnect(
                       rel.id,
                       true,
-                      `${rel.sponsee?.first_name} ${rel.sponsee?.last_initial}.`,
+                      `${rel.sponsee?.first_name} ${rel.sponsee?.last_initial}.`
                     )
                   }
                 >
@@ -346,7 +322,7 @@ export default function HomeScreen() {
             <CheckCircle size={24} color={theme.textSecondary} />
             <Text style={styles.cardTitle}>Recent Tasks</Text>
           </View>
-          {tasks.map((task) => (
+          {tasks.map(task => (
             <TouchableOpacity
               key={task.id}
               style={styles.taskItem}
@@ -361,28 +337,19 @@ export default function HomeScreen() {
               </View>
             </TouchableOpacity>
           ))}
-          <TouchableOpacity
-            style={styles.viewAllButton}
-            onPress={() => router.push('/tasks')}
-          >
+          <TouchableOpacity style={styles.viewAllButton} onPress={() => router.push('/tasks')}>
             <Text style={styles.viewAllText}>View All Tasks</Text>
           </TouchableOpacity>
         </View>
       )}
 
       <View style={styles.quickActions}>
-        <TouchableOpacity
-          style={styles.actionCard}
-          onPress={() => router.push('/steps')}
-        >
+        <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/steps')}>
           <BookOpen size={32} color={theme.primary} />
           <Text style={styles.actionTitle}>12 Steps</Text>
           <Text style={styles.actionSubtitle}>Learn & Reflect</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.actionCard}
-          onPress={() => router.push('/manage-tasks')}
-        >
+        <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/manage-tasks')}>
           <ClipboardList size={32} color={theme.primary} />
           <Text style={styles.actionTitle}>Manage Tasks</Text>
           <Text style={styles.actionSubtitle}>Guide Progress</Text>
@@ -391,8 +358,6 @@ export default function HomeScreen() {
     </ScrollView>
   );
 }
-
-import { BookOpen, ClipboardList } from 'lucide-react-native';
 
 const createStyles = (theme: any) =>
   StyleSheet.create({

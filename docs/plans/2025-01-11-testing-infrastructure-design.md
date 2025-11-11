@@ -14,6 +14,7 @@ This design implements comprehensive testing infrastructure for the 12-Step Trac
 ### Why Vertical Slice?
 
 **Solo Implementation Context:**
+
 - Validates entire stack early (Jest + RNTL + Maestro + CI)
 - Discovers blockers before heavy investment
 - Provides fast feedback on React 19 compatibility
@@ -25,17 +26,20 @@ The project uses React 19 (bleeding edge), which may have compatibility issues w
 ## Vertical Slice (Days 1-2)
 
 ### Goal
+
 Prove the entire testing stack works with minimal implementation.
 
 ### Deliverables
 
 **1. Jest Setup**
+
 - Install packages: `jest-expo`, `@testing-library/react-native`, `@testing-library/jest-native`
 - Create `jest.config.js` with jest-expo preset
 - Configure path aliases and transformIgnorePatterns
 - Create `__tests__/setup.ts` for global test setup
 
 **2. Minimal Test Infrastructure**
+
 ```
 __tests__/
   setup.ts                    # Global setup, import jest-native matchers
@@ -51,7 +55,8 @@ __mocks__/
 
 **3. Example Tests**
 
-*Utility Test (simplest):*
+_Utility Test (simplest):_
+
 ```typescript
 describe('validation utilities', () => {
   it('should validate email format', () => {
@@ -61,7 +66,8 @@ describe('validation utilities', () => {
 });
 ```
 
-*Component Test:*
+_Component Test:_
+
 ```typescript
 import { render, screen } from '@testing-library/react-native';
 import '@testing-library/jest-native';
@@ -75,16 +81,19 @@ describe('Button', () => {
 ```
 
 **4. Maestro E2E Setup**
+
 - Install Maestro CLI: `curl -Ls "https://get.maestro.mobile.dev" | bash`
 - Create `.maestro/flows/00-smoke-test.yaml`:
+
 ```yaml
 appId: com.billchirico.twelvesteptracker
 ---
 - launchApp
-- assertVisible: "Login"
+- assertVisible: 'Login'
 ```
 
 **5. Package.json Scripts**
+
 ```json
 {
   "test": "jest",
@@ -95,6 +104,7 @@ appId: com.billchirico.twelvesteptracker
 
 **6. CI Integration**
 Add test job to `.github/workflows/ci.yml`:
+
 ```yaml
 test:
   name: Unit Tests
@@ -108,9 +118,10 @@ test:
 ```
 
 Update build jobs to depend on tests:
+
 ```yaml
 build-web:
-  needs: [lint, test]  # Add 'test' dependency
+  needs: [lint, test] # Add 'test' dependency
 ```
 
 ### Success Criteria
@@ -124,16 +135,18 @@ build-web:
 ### Known Risks
 
 **Risk 1: React 19 + RNTL Compatibility**
-- *Probability:* Medium-High
-- *Impact:* Blocks component testing
-- *Mitigation:* Discovered immediately in vertical slice
-- *Fallback:* Use `@testing-library/react-native@next` or `react-test-renderer`
+
+- _Probability:_ Medium-High
+- _Impact:_ Blocks component testing
+- _Mitigation:_ Discovered immediately in vertical slice
+- _Fallback:_ Use `@testing-library/react-native@next` or `react-test-renderer`
 
 **Risk 2: Maestro Setup Issues**
-- *Probability:* Low-Medium
-- *Impact:* Delays E2E testing
-- *Mitigation:* Good documentation, active community
-- *Fallback:* Defer E2E to later, focus on unit tests first
+
+- _Probability:_ Low-Medium
+- _Impact:_ Delays E2E testing
+- _Mitigation:_ Good documentation, active community
+- _Fallback:_ Defer E2E to later, focus on unit tests first
 
 ## Post-Vertical-Slice Expansion
 
@@ -144,11 +157,13 @@ Once the vertical slice validates (1-2 days), expand systematically:
 **Goal:** Build robust foundation for all testing
 
 **Add MSW for API Mocking:**
+
 ```bash
 pnpm add -D msw @mswjs/interceptors
 ```
 
 **Create:**
+
 - `mocks/server.ts` - MSW server setup for Node environment
 - `mocks/handlers/` - REST API handlers for Supabase endpoints
   - `auth.ts` - Authentication endpoints
@@ -178,6 +193,7 @@ pnpm add -D msw @mswjs/interceptors
   - `messages.ts` - Mock message data
 
 **Update Jest Configuration:**
+
 ```javascript
 module.exports = {
   preset: 'jest-expo',
@@ -202,6 +218,7 @@ module.exports = {
 ```
 
 **Comprehensive Platform Mocks:**
+
 - expo-camera
 - expo-haptics
 - expo-linking
@@ -209,6 +226,7 @@ module.exports = {
 - react-native-reanimated
 
 **Deliverables:**
+
 - MSW server with all Supabase endpoints mocked
 - Custom render function for components with context
 - Fixture library for consistent test data
@@ -281,12 +299,14 @@ module.exports = {
    - Loading/error states
 
 **Testing Patterns:**
+
 - Use custom `renderWithProviders` for screens
 - Test user interactions with `fireEvent` and `userEvent`
 - Mock navigation with `useRouter` mock
 - Assert accessibility (labels, roles, hints)
 
 **Deliverables:**
+
 - All critical components have tests
 - 80%+ coverage for components, contexts, and screens
 - Consistent testing patterns documented in test files
@@ -298,6 +318,7 @@ module.exports = {
 **Test Workflows:**
 
 1. **Sponsor-Sponsee Relationship Flow**
+
    ```typescript
    describe('Relationship establishment', () => {
      it('should create and accept invitation', async () => {
@@ -343,6 +364,7 @@ module.exports = {
    - Database constraint violations
 
 **Deliverables:**
+
 - All critical user workflows have integration tests
 - Error scenarios comprehensively tested
 - MSW handlers cover all Supabase operations
@@ -354,19 +376,20 @@ module.exports = {
 **Maestro Flow Creation:**
 
 1. **01-authentication.yaml**
+
    ```yaml
    appId: com.billchirico.twelvesteptracker
    ---
    - launchApp
-   - tapOn: "Sign Up"
-   - tapOn: "Email"
-   - inputText: "test@example.com"
-   - tapOn: "Password"
-   - inputText: "SecurePass123!"
-   - tapOn: "Confirm Password"
-   - inputText: "SecurePass123!"
-   - tapOn: "Sign Up"
-   - assertVisible: "Onboarding"
+   - tapOn: 'Sign Up'
+   - tapOn: 'Email'
+   - inputText: 'test@example.com'
+   - tapOn: 'Password'
+   - inputText: 'SecurePass123!'
+   - tapOn: 'Confirm Password'
+   - inputText: 'SecurePass123!'
+   - tapOn: 'Sign Up'
+   - assertVisible: 'Onboarding'
    ```
 
 2. **02-onboarding.yaml**
@@ -411,12 +434,14 @@ module.exports = {
    - View history
 
 **Test Data Setup:**
+
 - Create dedicated test accounts in Supabase
 - Use RLS to isolate test data
 - Document test credentials in `.maestro/README.md`
 - Create setup/teardown scripts if needed
 
 **Local Testing Commands:**
+
 ```bash
 # Run all flows
 pnpm maestro
@@ -432,6 +457,7 @@ maestro test --debug .maestro/flows/01-authentication.yaml
 ```
 
 **Deliverables:**
+
 - 8 comprehensive E2E flows covering critical paths
 - Test accounts and data documented
 - Flows pass consistently on iOS and Android
@@ -444,6 +470,7 @@ maestro test --debug .maestro/flows/01-authentication.yaml
 **Add Coverage Reporting:**
 
 Update test job in `.github/workflows/ci.yml`:
+
 ```yaml
 test:
   name: Unit Tests
@@ -479,6 +506,7 @@ test:
 **Add E2E Tests Workflow:**
 
 Create `.github/workflows/e2e-tests.yml`:
+
 ```yaml
 name: E2E Tests
 
@@ -544,6 +572,7 @@ jobs:
 ```
 
 **Update package.json:**
+
 ```json
 {
   "scripts": {
@@ -558,12 +587,14 @@ jobs:
 ```
 
 **Configure Branch Protection:**
+
 - Require "Unit Tests" to pass
 - Require "E2E Tests (iOS)" to pass
 - Require 80% code coverage
 - Require 1 approval before merge
 
 **Setup Codecov:**
+
 1. Create account at codecov.io
 2. Add repository
 3. Get token
@@ -582,6 +613,7 @@ jobs:
    ```
 
 **Deliverables:**
+
 - Unit tests run on every push/PR
 - Coverage reported to Codecov
 - E2E tests run on every push/PR (macOS runner)
@@ -593,20 +625,24 @@ jobs:
 **Goal:** Comprehensive testing documentation and templates
 
 **Create docs/TESTING.md:**
+
 ```markdown
 # Testing Guide
 
 ## Overview
+
 This project uses Jest for unit/integration tests and Maestro for E2E tests.
 
 ## Running Tests
 
 ### Unit Tests
+
 - `pnpm test` - Run all tests
 - `pnpm test:watch` - Watch mode for development
 - `pnpm test:coverage` - Generate coverage report
 
 ### E2E Tests
+
 - `pnpm maestro` - Run all Maestro flows
 - `maestro test .maestro/flows/01-authentication.yaml` - Run specific flow
 - `pnpm maestro:record` - Record new flow interactively
@@ -614,27 +650,35 @@ This project uses Jest for unit/integration tests and Maestro for E2E tests.
 ## Writing Tests
 
 ### Unit Tests
+
 [Detailed patterns with examples]
 
 ### Component Tests
+
 [Custom render usage, provider setup, user event testing]
 
 ### Integration Tests
+
 [MSW setup, fixture usage, workflow testing]
 
 ### E2E Tests
+
 [Maestro YAML syntax, test data, best practices]
 
 ## Test Structure
+
 [Directory organization, naming conventions]
 
 ## Mocking Strategy
+
 [Module mocks vs MSW, when to use each]
 
 ## CI/CD
+
 [How tests run in CI, coverage requirements]
 
 ## Troubleshooting
+
 [Common issues and solutions]
 ```
 
@@ -648,6 +692,7 @@ This project uses Jest for unit/integration tests and Maestro for E2E tests.
 **Update Project Documentation:**
 
 1. **README.md** - Add Testing section:
+
    ```markdown
    ## Testing
 
@@ -658,6 +703,7 @@ This project uses Jest for unit/integration tests and Maestro for E2E tests.
    ```
 
 2. **CLAUDE.md** - Add Testing section:
+
    ```markdown
    ## Testing Guidelines
 
@@ -669,10 +715,12 @@ This project uses Jest for unit/integration tests and Maestro for E2E tests.
    ```
 
 3. **docs/CONTRIBUTING.md** - Update with testing requirements:
+
    ```markdown
    ## Testing Requirements
 
    All PRs must:
+
    - Include tests for new features/fixes
    - Maintain or improve code coverage (80% minimum)
    - Pass all unit and E2E tests
@@ -680,6 +728,7 @@ This project uses Jest for unit/integration tests and Maestro for E2E tests.
    ```
 
 **Deliverables:**
+
 - Comprehensive TESTING.md guide
 - Test templates for all test types
 - Updated project documentation
@@ -687,16 +736,16 @@ This project uses Jest for unit/integration tests and Maestro for E2E tests.
 
 ## Timeline Summary
 
-| Phase | Duration | Focus |
-|-------|----------|-------|
-| Vertical Slice | 1-2 days | Validate entire stack |
-| Phase 1 | 2-3 days | Complete test infrastructure |
-| Phase 2 | 3-4 days | Component testing |
-| Phase 3 | 2-3 days | Integration testing |
-| Phase 4 | 3-4 days | E2E testing with Maestro |
-| Phase 5 | 1-2 days | Complete CI/CD integration |
-| Phase 6 | 1-2 days | Documentation and templates |
-| **Total** | **14-18 days** | Full implementation |
+| Phase          | Duration       | Focus                        |
+| -------------- | -------------- | ---------------------------- |
+| Vertical Slice | 1-2 days       | Validate entire stack        |
+| Phase 1        | 2-3 days       | Complete test infrastructure |
+| Phase 2        | 3-4 days       | Component testing            |
+| Phase 3        | 2-3 days       | Integration testing          |
+| Phase 4        | 3-4 days       | E2E testing with Maestro     |
+| Phase 5        | 1-2 days       | Complete CI/CD integration   |
+| Phase 6        | 1-2 days       | Documentation and templates  |
+| **Total**      | **14-18 days** | Full implementation          |
 
 ## Success Metrics
 
@@ -710,17 +759,18 @@ This project uses Jest for unit/integration tests and Maestro for E2E tests.
 
 ## Risk Mitigation Summary
 
-| Risk | Mitigation |
-|------|------------|
-| React 19 compatibility | Vertical slice discovers early, fallback to react-test-renderer |
-| Maestro setup issues | Good docs, active community, can defer to CI-only |
-| CI timeout/performance | Start simple, add parallelization if needed |
-| Supabase mocking complexity | Start with module mocks, add MSW gradually |
-| Timeline optimism | Vertical slice reveals actual pace, can de-scope if needed |
+| Risk                        | Mitigation                                                      |
+| --------------------------- | --------------------------------------------------------------- |
+| React 19 compatibility      | Vertical slice discovers early, fallback to react-test-renderer |
+| Maestro setup issues        | Good docs, active community, can defer to CI-only               |
+| CI timeout/performance      | Start simple, add parallelization if needed                     |
+| Supabase mocking complexity | Start with module mocks, add MSW gradually                      |
+| Timeline optimism           | Vertical slice reveals actual pace, can de-scope if needed      |
 
 ## Memory Keeper Integration
 
 Throughout implementation:
+
 - Create context session: `context_session_start` with project directory
 - Save architectural decisions: `context_save` for key choices
 - Create checkpoints: `context_checkpoint` before major changes
@@ -729,19 +779,23 @@ Throughout implementation:
 ## Implementation Notes
 
 ### React 19 Compatibility
+
 If RNTL doesn't support React 19:
+
 1. Try `@testing-library/react-native@next`
 2. Check RNTL GitHub for React 19 support status
 3. Fallback to `react-test-renderer` if needed
 4. Document workaround in TESTING.md
 
 ### Maestro Best Practices
+
 - Use `assertVisible` instead of hardcoded waits
 - Add `testID` props to components for reliable selection
 - Keep flows focused (one user journey per flow)
 - Use YAML anchors for repeated steps
 
 ### MSW Best Practices
+
 - Start with happy path handlers
 - Add error scenarios gradually
 - Use fixtures for consistent data

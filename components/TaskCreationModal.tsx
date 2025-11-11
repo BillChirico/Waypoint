@@ -34,23 +34,17 @@ export default function TaskCreationModal({
   preselectedSponseeId,
   theme,
 }: TaskCreationModalProps) {
-  const [selectedSponseeId, setSelectedSponseeId] = useState<string>(
-    preselectedSponseeId || '',
-  );
-  const [selectedStepNumber, setSelectedStepNumber] = useState<number | null>(
-    null,
-  );
+  const [selectedSponseeId, setSelectedSponseeId] = useState<string>(preselectedSponseeId || '');
+  const [selectedStepNumber, setSelectedStepNumber] = useState<number | null>(null);
   const [templates, setTemplates] = useState<TaskTemplate[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<TaskTemplate | null>(
-    null,
-  );
+  const [selectedTemplate, setSelectedTemplate] = useState<TaskTemplate | null>(null);
   const [customTitle, setCustomTitle] = useState('');
   const [customDescription, setCustomDescription] = useState('');
   const [dueDate, setDueDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState<
-    'sponsee' | 'step' | 'template' | null
-  >(null);
+  const [activeDropdown, setActiveDropdown] = useState<'sponsee' | 'step' | 'template' | null>(
+    null
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -125,13 +119,11 @@ export default function TaskCreationModal({
         status: 'assigned',
       };
 
-      const { error: insertError } = await supabase
-        .from('tasks')
-        .insert(taskData);
+      const { error: insertError } = await supabase.from('tasks').insert(taskData);
 
       if (insertError) throw insertError;
 
-      const selectedSponsee = sponsees.find((s) => s.id === selectedSponseeId);
+      const selectedSponsee = sponsees.find(s => s.id === selectedSponseeId);
 
       await supabase.from('notifications').insert({
         user_id: selectedSponseeId,
@@ -176,21 +168,12 @@ export default function TaskCreationModal({
   const styles = createStyles(theme);
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={handleClose}
-    >
-      <TouchableOpacity
-        style={styles.modalOverlay}
-        activeOpacity={1}
-        onPress={closeAllDropdowns}
-      >
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
+      <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={closeAllDropdowns}>
         <TouchableOpacity
           style={styles.modalContent}
           activeOpacity={1}
-          onPress={(e) => e.stopPropagation()}
+          onPress={e => e.stopPropagation()}
         >
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Assign New Task</Text>
@@ -199,10 +182,7 @@ export default function TaskCreationModal({
             </TouchableOpacity>
           </View>
 
-          <ScrollView
-            style={styles.modalBody}
-            showsVerticalScrollIndicator={false}
-          >
+          <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
             {error ? (
               <View style={styles.errorContainer}>
                 <Text style={styles.errorText}>{error}</Text>
@@ -211,20 +191,11 @@ export default function TaskCreationModal({
 
             <View style={styles.formGroup}>
               <Text style={styles.label}>Sponsee *</Text>
-              <TouchableOpacity
-                style={styles.dropdown}
-                onPress={() => toggleDropdown('sponsee')}
-              >
-                <Text
-                  style={[
-                    styles.dropdownText,
-                    !selectedSponseeId && styles.placeholderText,
-                  ]}
-                >
+              <TouchableOpacity style={styles.dropdown} onPress={() => toggleDropdown('sponsee')}>
+                <Text style={[styles.dropdownText, !selectedSponseeId && styles.placeholderText]}>
                   {selectedSponseeId
-                    ? `${sponsees.find((s) => s.id === selectedSponseeId)?.first_name} ${
-                        sponsees.find((s) => s.id === selectedSponseeId)
-                          ?.last_initial
+                    ? `${sponsees.find(s => s.id === selectedSponseeId)?.first_name} ${
+                        sponsees.find(s => s.id === selectedSponseeId)?.last_initial
                       }.`
                     : 'Select sponsee'}
                 </Text>
@@ -235,7 +206,7 @@ export default function TaskCreationModal({
             {activeDropdown === 'sponsee' && (
               <View style={styles.dropdownMenuOverlay}>
                 <ScrollView style={styles.dropdownMenuScrollable}>
-                  {sponsees.map((sponsee) => (
+                  {sponsees.map(sponsee => (
                     <TouchableOpacity
                       key={sponsee.id}
                       style={styles.dropdownItem}
@@ -255,19 +226,9 @@ export default function TaskCreationModal({
 
             <View style={styles.formGroup}>
               <Text style={styles.label}>Step Number (Optional)</Text>
-              <TouchableOpacity
-                style={styles.dropdown}
-                onPress={() => toggleDropdown('step')}
-              >
-                <Text
-                  style={[
-                    styles.dropdownText,
-                    !selectedStepNumber && styles.placeholderText,
-                  ]}
-                >
-                  {selectedStepNumber
-                    ? `Step ${selectedStepNumber}`
-                    : 'Select step (optional)'}
+              <TouchableOpacity style={styles.dropdown} onPress={() => toggleDropdown('step')}>
+                <Text style={[styles.dropdownText, !selectedStepNumber && styles.placeholderText]}>
+                  {selectedStepNumber ? `Step ${selectedStepNumber}` : 'Select step (optional)'}
                 </Text>
                 <ChevronDown size={20} color={theme.textSecondary} />
               </TouchableOpacity>
@@ -286,13 +247,11 @@ export default function TaskCreationModal({
                       closeAllDropdowns();
                     }}
                   >
-                    <Text
-                      style={[styles.dropdownItemText, { fontStyle: 'italic' }]}
-                    >
+                    <Text style={[styles.dropdownItemText, { fontStyle: 'italic' }]}>
                       No specific step
                     </Text>
                   </TouchableOpacity>
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((step) => (
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map(step => (
                     <TouchableOpacity
                       key={step}
                       style={styles.dropdownItem}
@@ -314,10 +273,7 @@ export default function TaskCreationModal({
             <View style={styles.formGroup}>
               <Text style={styles.label}>Task Template (Optional)</Text>
               <TouchableOpacity
-                style={[
-                  styles.dropdown,
-                  !selectedStepNumber && styles.dropdownDisabled,
-                ]}
+                style={[styles.dropdown, !selectedStepNumber && styles.dropdownDisabled]}
                 onPress={() => {
                   if (selectedStepNumber) {
                     toggleDropdown('template');
@@ -328,8 +284,7 @@ export default function TaskCreationModal({
                 <Text
                   style={[
                     styles.dropdownText,
-                    (!selectedStepNumber || !selectedTemplate) &&
-                      styles.placeholderText,
+                    (!selectedStepNumber || !selectedTemplate) && styles.placeholderText,
                   ]}
                 >
                   {!selectedStepNumber
@@ -352,19 +307,14 @@ export default function TaskCreationModal({
                       </Text>
                     </View>
                   ) : (
-                    templates.map((template) => (
+                    templates.map(template => (
                       <TouchableOpacity
                         key={template.id}
                         style={styles.dropdownItem}
                         onPress={() => handleTemplateSelect(template)}
                       >
-                        <Text style={styles.dropdownItemTextBold}>
-                          {template.title}
-                        </Text>
-                        <Text
-                          style={styles.dropdownItemTextSmall}
-                          numberOfLines={2}
-                        >
+                        <Text style={styles.dropdownItemTextBold}>{template.title}</Text>
+                        <Text style={styles.dropdownItemTextSmall} numberOfLines={2}>
                           {template.description}
                         </Text>
                       </TouchableOpacity>
@@ -406,9 +356,7 @@ export default function TaskCreationModal({
                   type="date"
                   value={dueDate ? dueDate.toISOString().split('T')[0] : ''}
                   min={new Date().toISOString().split('T')[0]}
-                  onChange={(e) =>
-                    setDueDate(e.target.value ? new Date(e.target.value) : null)
-                  }
+                  onChange={e => setDueDate(e.target.value ? new Date(e.target.value) : null)}
                   style={{
                     padding: 12,
                     fontSize: 16,
@@ -470,10 +418,7 @@ export default function TaskCreationModal({
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[
-                styles.submitButton,
-                isSubmitting && styles.buttonDisabled,
-              ]}
+              style={[styles.submitButton, isSubmitting && styles.buttonDisabled]}
               onPress={handleSubmit}
               disabled={isSubmitting}
             >

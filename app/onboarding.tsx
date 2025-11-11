@@ -44,10 +44,7 @@ export default function OnboardingScreen() {
         updateData.last_initial = lastInitial.toUpperCase();
       }
 
-      const { error } = await supabase
-        .from('profiles')
-        .update(updateData)
-        .eq('id', user.id);
+      const { error } = await supabase.from('profiles').update(updateData).eq('id', user.id);
 
       if (error) throw error;
 
@@ -85,8 +82,7 @@ export default function OnboardingScreen() {
           <View style={styles.nameContainer}>
             <Text style={styles.sectionTitle}>What&apos;s your name?</Text>
             <Text style={styles.sectionSubtitle}>
-              We only ask for your first name and last initial to protect your
-              privacy.
+              We only ask for your first name and last initial to protect your privacy.
             </Text>
 
             <View style={styles.inputContainer}>
@@ -108,7 +104,7 @@ export default function OnboardingScreen() {
                 placeholder="D"
                 placeholderTextColor={theme.textTertiary}
                 value={lastInitial}
-                onChangeText={(text) => setLastInitial(text.toUpperCase())}
+                onChangeText={text => setLastInitial(text.toUpperCase())}
                 maxLength={1}
                 autoCapitalize="characters"
               />
@@ -118,8 +114,7 @@ export default function OnboardingScreen() {
           <TouchableOpacity
             style={[
               styles.button,
-              (!firstName || !lastInitial || lastInitial.length !== 1) &&
-                styles.buttonDisabled,
+              (!firstName || !lastInitial || lastInitial.length !== 1) && styles.buttonDisabled,
             ]}
             onPress={() => setStep(2)}
             disabled={!firstName || !lastInitial || lastInitial.length !== 1}
@@ -135,15 +130,10 @@ export default function OnboardingScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.content}>
         <Text style={styles.title}>Your Sobriety Date</Text>
-        <Text style={styles.subtitle}>
-          When did you begin your sobriety journey?
-        </Text>
+        <Text style={styles.subtitle}>When did you begin your sobriety journey?</Text>
 
         <View style={styles.dateContainer}>
-          <TouchableOpacity
-            style={styles.dateButton}
-            onPress={() => setShowDatePicker(true)}
-          >
+          <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
             <Calendar size={24} color="#007AFF" />
             <Text style={styles.dateText}>
               {sobrietyDate.toLocaleDateString('en-US', {
@@ -154,16 +144,15 @@ export default function OnboardingScreen() {
             </Text>
           </TouchableOpacity>
 
-          {(showDatePicker || Platform.OS === 'web') &&
-            Platform.OS !== 'web' && (
-              <DateTimePicker
-                value={sobrietyDate}
-                mode="date"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                onChange={onDateChange}
-                maximumDate={new Date()}
-              />
-            )}
+          {(showDatePicker || Platform.OS === 'web') && Platform.OS !== 'web' && (
+            <DateTimePicker
+              value={sobrietyDate}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={onDateChange}
+              maximumDate={new Date()}
+            />
+          )}
 
           {Platform.OS === 'web' && showDatePicker && (
             <View style={styles.webDatePicker}>
@@ -171,7 +160,7 @@ export default function OnboardingScreen() {
                 type="date"
                 value={sobrietyDate.toISOString().split('T')[0]}
                 max={new Date().toISOString().split('T')[0]}
-                onChange={(e) => {
+                onChange={e => {
                   setSobrietyDate(new Date(e.target.value));
                   setShowDatePicker(false);
                 }}
@@ -189,10 +178,7 @@ export default function OnboardingScreen() {
 
           <View style={styles.daysContainer}>
             <Text style={styles.daysCount}>
-              {Math.floor(
-                (new Date().getTime() - sobrietyDate.getTime()) /
-                  (1000 * 60 * 60 * 24),
-              )}
+              {Math.floor((new Date().getTime() - sobrietyDate.getTime()) / (1000 * 60 * 60 * 24))}
             </Text>
             <Text style={styles.daysLabel}>Days Sober</Text>
           </View>
@@ -218,9 +204,7 @@ export default function OnboardingScreen() {
             onPress={handleComplete}
             disabled={loading}
           >
-            <Text style={styles.buttonText}>
-              {loading ? 'Setting up...' : 'Complete Setup'}
-            </Text>
+            <Text style={styles.buttonText}>{loading ? 'Setting up...' : 'Complete Setup'}</Text>
           </TouchableOpacity>
         </View>
       </View>

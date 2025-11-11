@@ -104,8 +104,7 @@ export default function TasksScreen() {
     }
   };
 
-  const getTasksByStatus = (status: string) =>
-    tasks.filter((t) => t.status === status);
+  const getTasksByStatus = (status: string) => tasks.filter(t => t.status === status);
 
   const styles = createStyles(theme);
 
@@ -119,24 +118,18 @@ export default function TasksScreen() {
       <ScrollView
         style={styles.content}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={theme.primary}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
         }
       >
         {getTasksByStatus('assigned').length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>New Tasks</Text>
-            {getTasksByStatus('assigned').map((task) => (
+            {getTasksByStatus('assigned').map(task => (
               <View key={task.id} style={styles.taskCard}>
                 <View style={styles.taskHeader}>
                   {task.step_number && (
                     <View style={styles.stepBadge}>
-                      <Text style={styles.stepBadgeText}>
-                        Step {task.step_number}
-                      </Text>
+                      <Text style={styles.stepBadgeText}>Step {task.step_number}</Text>
                     </View>
                   )}
                   <Text style={styles.taskDate}>
@@ -155,8 +148,7 @@ export default function TasksScreen() {
                 )}
                 <View style={styles.taskFooter}>
                   <Text style={styles.sponsorText}>
-                    From: {task.sponsor?.first_name}{' '}
-                    {task.sponsor?.last_initial}.
+                    From: {task.sponsor?.first_name} {task.sponsor?.last_initial}.
                   </Text>
                   <TouchableOpacity
                     style={styles.completeButton}
@@ -174,17 +166,12 @@ export default function TasksScreen() {
         {getTasksByStatus('completed').length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Completed</Text>
-            {getTasksByStatus('completed').map((task) => (
-              <View
-                key={task.id}
-                style={[styles.taskCard, styles.completedCard]}
-              >
+            {getTasksByStatus('completed').map(task => (
+              <View key={task.id} style={[styles.taskCard, styles.completedCard]}>
                 <View style={styles.taskHeader}>
                   {task.step_number && (
                     <View style={styles.stepBadge}>
-                      <Text style={styles.stepBadgeText}>
-                        Step {task.step_number}
-                      </Text>
+                      <Text style={styles.stepBadgeText}>Step {task.step_number}</Text>
                     </View>
                   )}
                   <CheckCircle size={20} color={theme.primary} />
@@ -197,9 +184,7 @@ export default function TasksScreen() {
                 {task.completion_notes && (
                   <View style={styles.completionNotesContainer}>
                     <Text style={styles.completionNotesLabel}>Your Notes:</Text>
-                    <Text style={styles.completionNotesText}>
-                      {task.completion_notes}
-                    </Text>
+                    <Text style={styles.completionNotesText}>{task.completion_notes}</Text>
                   </View>
                 )}
               </View>
@@ -212,8 +197,7 @@ export default function TasksScreen() {
             <Circle size={64} color="#d1d5db" />
             <Text style={styles.emptyTitle}>No tasks yet</Text>
             <Text style={styles.emptyText}>
-              Your sponsor will assign tasks to help you progress through the 12
-              steps
+              Your sponsor will assign tasks to help you progress through the 12 steps
             </Text>
           </View>
         )}
@@ -243,23 +227,16 @@ export default function TasksScreen() {
                   <View style={styles.taskSummary}>
                     {selectedTask.step_number && (
                       <View style={styles.stepBadge}>
-                        <Text style={styles.stepBadgeText}>
-                          Step {selectedTask.step_number}
-                        </Text>
+                        <Text style={styles.stepBadgeText}>Step {selectedTask.step_number}</Text>
                       </View>
                     )}
-                    <Text style={styles.taskSummaryTitle}>
-                      {selectedTask.title}
-                    </Text>
+                    <Text style={styles.taskSummaryTitle}>{selectedTask.title}</Text>
                   </View>
 
                   <View style={styles.formGroup}>
-                    <Text style={styles.label}>
-                      Completion Notes (Optional)
-                    </Text>
+                    <Text style={styles.label}>Completion Notes (Optional)</Text>
                     <Text style={styles.helpText}>
-                      Share your reflections, insights, or any challenges you
-                      faced with this task.
+                      Share your reflections, insights, or any challenges you faced with this task.
                     </Text>
                     <TextInput
                       style={styles.textArea}
@@ -285,10 +262,7 @@ export default function TasksScreen() {
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[
-                  styles.submitButton,
-                  isSubmitting && styles.buttonDisabled,
-                ]}
+                style={[styles.submitButton, isSubmitting && styles.buttonDisabled]}
                 onPress={submitTaskCompletion}
                 disabled={isSubmitting}
               >

@@ -599,11 +599,7 @@ function getUser(id) {
 import { Profile } from '@/types/database';
 
 async function getUser(id: string): Promise<Profile | null> {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', id)
-    .single();
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
 
   return error ? null : data;
 }

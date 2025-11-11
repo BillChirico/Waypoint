@@ -17,12 +17,7 @@ import { Heart, ArrowLeft } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
 
 const GoogleLogo = ({ size = 20 }: { size?: number }) => (
-  <Svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    style={{ marginRight: 12 }}
-  >
+  <Svg width={size} height={size} viewBox="0 0 24 24" style={{ marginRight: 12 }}>
     <Path
       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
       fill="#4285F4"
@@ -119,9 +114,7 @@ export default function SignupScreen() {
       await signInWithGoogle();
     } catch (error: any) {
       if (Platform.OS === 'web') {
-        window.alert(
-          'Error: ' + (error.message || 'Failed to sign in with Google'),
-        );
+        window.alert('Error: ' + (error.message || 'Failed to sign in with Google'));
       } else {
         Alert.alert('Error', error.message || 'Failed to sign in with Google');
       }
@@ -138,10 +131,7 @@ export default function SignupScreen() {
       style={styles.container}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <ArrowLeft size={24} color="#374151" />
         </TouchableOpacity>
 
@@ -171,7 +161,7 @@ export default function SignupScreen() {
               style={styles.input}
               placeholder="D"
               value={lastInitial}
-              onChangeText={(text) => setLastInitial(text.toUpperCase())}
+              onChangeText={text => setLastInitial(text.toUpperCase())}
               maxLength={1}
               autoCapitalize="characters"
               editable={!loading}
@@ -232,18 +222,13 @@ export default function SignupScreen() {
           </View>
 
           <TouchableOpacity
-            style={[
-              styles.googleButton,
-              googleLoading && styles.buttonDisabled,
-            ]}
+            style={[styles.googleButton, googleLoading && styles.buttonDisabled]}
             onPress={handleGoogleSignIn}
             disabled={loading || googleLoading}
           >
             {!googleLoading && <GoogleLogo size={20} />}
             <Text style={styles.googleButtonText}>
-              {googleLoading
-                ? 'Signing in with Google...'
-                : 'Continue with Google'}
+              {googleLoading ? 'Signing in with Google...' : 'Continue with Google'}
             </Text>
           </TouchableOpacity>
 
@@ -253,8 +238,7 @@ export default function SignupScreen() {
             disabled={loading || googleLoading}
           >
             <Text style={styles.loginLinkText}>
-              Already have an account?{' '}
-              <Text style={styles.loginLinkBold}>Sign In</Text>
+              Already have an account? <Text style={styles.loginLinkBold}>Sign In</Text>
             </Text>
           </TouchableOpacity>
         </View>
