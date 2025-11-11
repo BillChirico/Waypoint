@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "EXPO_NO_TELEMETRY=1 expo start",
     "ios": "EXPO_NO_TELEMETRY=1 expo run:ios",
-    "android": "EXPO_NO_TELEMETRY=1 expo run:android",
+    "android": "EXPO_NO_TELEMETRY=1 expo run:web",
+    "web": "EXPO_NO_TELEMETRY=1 expo run:web",
     "build:web": "expo export --platform web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
@@ -71,6 +72,7 @@
     "jest-expo": "^54.0.13",
     "js-yaml": "^4.1.0",
     "lint-staged": "^16.2.6",
+    "msw": "^2.12.1",
     "prettier": "^3.6.2",
     "typescript": "~5.9.2"
   },
