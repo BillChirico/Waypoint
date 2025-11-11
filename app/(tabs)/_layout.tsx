@@ -1,12 +1,10 @@
 import { Tabs } from 'expo-router';
-import { Home, BookOpen, TrendingUp, CheckSquare, MessageCircle, User, ClipboardList } from 'lucide-react-native';
+import { Home, BookOpen, TrendingUp, CheckSquare, User, ClipboardList } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useAuth } from '@/contexts/AuthContext';
 import { Platform } from 'react-native';
 
 export default function TabLayout() {
   const { theme } = useTheme();
-  const { profile } = useAuth();
 
   return (
     <Tabs
@@ -62,20 +60,11 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => <CheckSquare size={size} color={color} />,
         }}
       />
-      {(profile?.role === 'sponsor' || profile?.role === 'both') && (
-        <Tabs.Screen
-          name="manage-tasks"
-          options={{
-            title: 'Manage',
-            tabBarIcon: ({ color, size }) => <ClipboardList size={size} color={color} />,
-          }}
-        />
-      )}
       <Tabs.Screen
-        name="messages"
+        name="manage-tasks"
         options={{
-          title: 'Messages',
-          tabBarIcon: ({ color, size }) => <MessageCircle size={size} color={color} />,
+          title: 'Manage',
+          tabBarIcon: ({ color, size }) => <ClipboardList size={size} color={color} />,
         }}
       />
       <Tabs.Screen

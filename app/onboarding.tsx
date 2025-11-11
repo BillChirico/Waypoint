@@ -14,7 +14,6 @@ export default function OnboardingScreen() {
   const [step, setStep] = useState(1);
   const [firstName, setFirstName] = useState('');
   const [lastInitial, setLastInitial] = useState('');
-  const [role, setRole] = useState<UserRole>('sponsee');
   const [sobrietyDate, setSobrietyDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -27,7 +26,7 @@ export default function OnboardingScreen() {
     setLoading(true);
     try {
       const updateData: any = {
-        role,
+        role: 'both',
         sobriety_date: sobrietyDate.toISOString().split('T')[0],
       };
 
@@ -116,79 +115,6 @@ export default function OnboardingScreen() {
     );
   }
 
-  if (step === 2 || (step === 1 && !needsName)) {
-    return (
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.content}>
-          <Text style={styles.title}>Welcome to 12-Step Tracker</Text>
-          <Text style={styles.subtitle}>Let&apos;s set up your recovery journey</Text>
-
-          <View style={styles.roleContainer}>
-            <Text style={styles.sectionTitle}>What is your role?</Text>
-
-            <TouchableOpacity
-              style={[styles.roleCard, role === 'sponsee' && styles.roleCardSelected]}
-              onPress={() => setRole('sponsee')}
-            >
-              <View style={styles.roleIcon}>
-                <User size={32} color={role === 'sponsee' ? '#007AFF' : '#6b7280'} />
-              </View>
-              <View style={styles.roleContent}>
-                <Text style={[styles.roleTitle, role === 'sponsee' && styles.roleTextSelected]}>
-                  Sponsee
-                </Text>
-                <Text style={styles.roleDescription}>
-                  I am seeking guidance and support in my recovery journey
-                </Text>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.roleCard, role === 'sponsor' && styles.roleCardSelected]}
-              onPress={() => setRole('sponsor')}
-            >
-              <View style={styles.roleIcon}>
-                <Users size={32} color={role === 'sponsor' ? '#007AFF' : '#6b7280'} />
-              </View>
-              <View style={styles.roleContent}>
-                <Text style={[styles.roleTitle, role === 'sponsor' && styles.roleTextSelected]}>
-                  Sponsor
-                </Text>
-                <Text style={styles.roleDescription}>
-                  I am here to guide and support others in their recovery
-                </Text>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.roleCard, role === 'both' && styles.roleCardSelected]}
-              onPress={() => setRole('both')}
-            >
-              <View style={styles.roleIcon}>
-                <Users size={32} color={role === 'both' ? '#007AFF' : '#6b7280'} />
-              </View>
-              <View style={styles.roleContent}>
-                <Text style={[styles.roleTitle, role === 'both' && styles.roleTextSelected]}>
-                  Both
-                </Text>
-                <Text style={styles.roleDescription}>
-                  I am both a sponsor to others and have my own sponsor
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => needsName ? setStep(3) : setStep(2)}
-          >
-            <Text style={styles.buttonText}>Continue</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    );
-  }
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.content}>
@@ -251,16 +177,18 @@ export default function OnboardingScreen() {
         </View>
 
         <View style={styles.buttonGroup}>
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={() => needsName ? setStep(2) : setStep(1)}
-            disabled={loading}
-          >
-            <Text style={styles.secondaryButtonText}>Back</Text>
-          </TouchableOpacity>
+          {needsName && (
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={() => setStep(1)}
+              disabled={loading}
+            >
+              <Text style={styles.secondaryButtonText}>Back</Text>
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity
-            style={[styles.button, styles.flexButton, loading && styles.buttonDisabled]}
+            style={[styles.button, needsName ? styles.flexButton : styles.fullWidthButton, loading && styles.buttonDisabled]}
             onPress={handleComplete}
             disabled={loading}
           >
@@ -448,5 +376,8 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   flexButton: {
     flex: 2,
+  },
+  fullWidthButton: {
+    flex: 1,
   },
 });

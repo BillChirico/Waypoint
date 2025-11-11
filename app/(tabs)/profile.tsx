@@ -591,11 +591,6 @@ export default function ProfileScreen() {
         </View>
         <Text style={styles.name}>{profile?.first_name} {profile?.last_initial}.</Text>
         <Text style={styles.email}>{profile?.email}</Text>
-        <View style={styles.roleBadge}>
-          <Text style={styles.roleText}>
-            {profile?.role === 'both' ? 'SPONSOR & SPONSEE' : profile?.role?.toUpperCase()}
-          </Text>
-        </View>
       </View>
 
       <View style={styles.sobrietyCard}>
@@ -618,9 +613,8 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      {(profile?.role === 'sponsor' || profile?.role === 'both') && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Your Sponsees</Text>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Your Sponsees</Text>
           {loadingRelationships ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="small" color={theme.primary} />
@@ -686,12 +680,10 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </View>
           )}
-        </View>
-      )}
+      </View>
 
-      {(profile?.role === 'sponsee' || profile?.role === 'both') && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Your Sponsor</Text>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Your Sponsor</Text>
           {loadingRelationships ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="small" color={theme.primary} />
@@ -779,10 +771,9 @@ export default function ProfileScreen() {
               )}
             </View>
           )}
-        </View>
-      )}
+      </View>
 
-      {(profile?.role === 'sponsor' || profile?.role === 'both') && sponsorRelationships.length > 0 && !showInviteInput && (
+      {sponsorRelationships.length > 0 && !showInviteInput && (
         <View style={styles.section}>
           <TouchableOpacity style={styles.actionButton} onPress={() => setShowInviteInput(true)}>
             <QrCode size={20} color={theme.primary} />

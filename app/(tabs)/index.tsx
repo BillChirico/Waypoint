@@ -22,22 +22,20 @@ export default function HomeScreen() {
   const fetchData = async () => {
     if (!profile) return;
 
-    if (profile.role === 'sponsor' || profile.role === 'both') {
-      const { data } = await supabase
-        .from('sponsor_sponsee_relationships')
-        .select('*, sponsee:sponsee_id(*)').eq('sponsor_id', profile.id)
-        .eq('status', 'active');
-      setRelationships(data || []);
-      const profiles = (data || []).map((rel) => rel.sponsee).filter(Boolean) as Profile[];
-      setSponseeProfiles(profiles);
-    } else {
-      const { data } = await supabase
-        .from('sponsor_sponsee_relationships')
-        .select('*, sponsor:sponsor_id(*)')
-        .eq('sponsee_id', profile.id)
-        .eq('status', 'active');
-      setRelationships(data || []);
-    }
+    const { data: asSponsor } = await supabase
+      .from('sponsor_sponsee_relationships')
+      .select('*, sponsee:sponsee_id(*)').eq('sponsor_id', profile.id)
+      .eq('status', 'active');
+
+    const { data: asSponsee } = await supabase
+      .from('sponsor_sponsee_relationships')
+      .select('*, sponsor:sponsor_id(*)')
+      .eq('sponsee_id', profile.id)
+      .eq('status', 'active');
+
+    setRelationships([...(asSponsor || []), ...(asSponsee || [])]);
+    const profiles = (asSponsor || []).map((rel) => rel.sponsee).filter(Boolean) as Profile[];
+    setSponseeProfiles(profiles);
 
     const { data: tasksData } = await supabase
       .from('tasks')
@@ -173,13 +171,13 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {profile?.role === 'sponsee' && relationships.length > 0 && (
+      {relationships.filter(rel => rel.sponsor_id !== profile?.id).length > 0 && (
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <Users size={24} color={theme.textSecondary} />
             <Text style={styles.cardTitle}>Your Sponsor</Text>
           </View>
-          {relationships.map((rel) => (
+          {relationships.filter(rel => rel.sponsor_id !== profile?.id).map((rel) => (
             <View key={rel.id} style={styles.relationshipItem}>
               <View style={styles.avatar}>
                 <Text style={styles.avatarText}>
@@ -203,16 +201,15 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {(profile?.role === 'sponsor' || profile?.role === 'both') && (
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Users size={24} color={theme.textSecondary} />
-            <Text style={styles.cardTitle}>Your Sponsees</Text>
-          </View>
-          {relationships.length === 0 ? (
-            <Text style={styles.emptyText}>No sponsees yet. Share your invite code to connect.</Text>
-          ) : (
-            relationships.map((rel) => (
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <Users size={24} color={theme.textSecondary} />
+          <Text style={styles.cardTitle}>Your Sponsees</Text>
+        </View>
+        {relationships.filter(rel => rel.sponsor_id === profile?.id).length === 0 ? (
+          <Text style={styles.emptyText}>No sponsees yet. Share your invite code to connect.</Text>
+        ) : (
+          relationships.filter(rel => rel.sponsor_id === profile?.id).map((rel) => (
               <View key={rel.id} style={styles.relationshipItem}>
                 <View style={styles.avatar}>
                   <Text style={styles.avatarText}>
@@ -243,8 +240,7 @@ export default function HomeScreen() {
               </View>
             ))
           )}
-        </View>
-      )}
+      </View>
 
       <TaskCreationModal
         visible={showTaskModal}
@@ -288,17 +284,17 @@ export default function HomeScreen() {
           <Text style={styles.actionTitle}>12 Steps</Text>
           <Text style={styles.actionSubtitle}>Learn & Reflect</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/messages')}>
-          <MessageCircle size={32} color={theme.primary} />
-          <Text style={styles.actionTitle}>Messages</Text>
-          <Text style={styles.actionSubtitle}>Stay Connected</Text>
+        <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/manage-tasks')}>
+          <ClipboardList size={32} color={theme.primary} />
+          <Text style={styles.actionTitle}>Manage Tasks</Text>
+          <Text style={styles.actionSubtitle}>Guide Progress</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
   );
 }
 
-import { BookOpen, MessageCircle } from 'lucide-react-native';
+import { BookOpen, ClipboardList } from 'lucide-react-native';
 
 const createStyles = (theme: any) => StyleSheet.create({
   container: {
