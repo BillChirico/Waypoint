@@ -61,7 +61,7 @@ export default function StepsScreen() {
             <View style={styles.modalHeaderContent}>
               <Text style={styles.modalStepNumber}>Step {selectedStep?.step_number}</Text>
               <TouchableOpacity onPress={() => setSelectedStep(null)}>
-                <X size={24} color="#374151" />
+                <X size={24} color={theme.text} />
               </TouchableOpacity>
             </View>
           </View>
@@ -135,7 +135,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#10b981',
+    backgroundColor: theme.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -177,7 +177,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   modalStepNumber: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#10b981',
+    color: theme.primary,
   },
   modalContent: {
     flex: 1,
@@ -207,7 +207,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   sectionContent: {
     fontSize: 16,
-    color: '#374151',
+    color: theme.textSecondary,
     lineHeight: 26,
   },
   promptItem: {
@@ -216,14 +216,14 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   promptBullet: {
     fontSize: 16,
-    color: '#10b981',
+    color: theme.primary,
     marginRight: 12,
     fontWeight: '700',
   },
   promptText: {
     flex: 1,
     fontSize: 16,
-    color: '#374151',
+    color: theme.textSecondary,
     lineHeight: 24,
   },
 });

@@ -145,8 +145,8 @@ export default function MessagesScreen() {
               msg.sender_id === profile?.id ? styles.sentMessage : styles.receivedMessage,
             ]}
           >
-            <Text style={styles.messageText}>{msg.content}</Text>
-            <Text style={styles.messageTime}>
+            <Text style={[styles.messageText, msg.sender_id !== profile?.id && styles.receivedMessageText]}>{msg.content}</Text>
+            <Text style={[styles.messageTime, msg.sender_id !== profile?.id && styles.receivedMessageTime]}>
               {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </Text>
           </View>
@@ -206,7 +206,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#10b981',
+    backgroundColor: theme.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -259,7 +259,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   backText: {
     fontSize: 16,
-    color: '#10b981',
+    color: theme.primary,
     fontWeight: '600',
   },
   chatHeaderTitle: {
@@ -279,11 +279,13 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   sentMessage: {
     alignSelf: 'flex-end',
-    backgroundColor: '#10b981',
+    backgroundColor: theme.primary,
   },
   receivedMessage: {
     alignSelf: 'flex-start',
-    backgroundColor: theme.card,
+    backgroundColor: theme.borderLight,
+    borderWidth: 1,
+    borderColor: theme.border,
   },
   messageText: {
     fontSize: 16,
@@ -295,6 +297,13 @@ const createStyles = (theme: any) => StyleSheet.create({
     opacity: 0.7,
     marginTop: 4,
   },
+  receivedMessageText: {
+    color: theme.text,
+  },
+  receivedMessageTime: {
+    color: theme.textSecondary,
+    opacity: 1,
+  },
   inputContainer: {
     flexDirection: 'row',
     padding: 16,
@@ -305,18 +314,19 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: theme.borderLight,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 16,
     maxHeight: 100,
+    color: theme.text,
   },
   sendButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#10b981',
+    backgroundColor: theme.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 8,

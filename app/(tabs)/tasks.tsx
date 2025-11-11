@@ -84,7 +84,7 @@ export default function TasksScreen() {
                     style={styles.completeButton}
                     onPress={() => handleCompleteTask(task.id)}
                   >
-                    <CheckCircle size={20} color="#10b981" />
+                    <CheckCircle size={20} color={theme.primary} />
                     <Text style={styles.completeButtonText}>Complete</Text>
                   </TouchableOpacity>
                 </View>
@@ -102,7 +102,7 @@ export default function TasksScreen() {
                   <View style={styles.stepBadge}>
                     <Text style={styles.stepBadgeText}>Step {task.step_number}</Text>
                   </View>
-                  <CheckCircle size={20} color="#10b981" />
+                  <CheckCircle size={20} color={theme.primary} />
                 </View>
                 <Text style={styles.taskTitle}>{task.title}</Text>
                 <Text style={styles.taskDescription}>{task.description}</Text>
@@ -184,7 +184,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     marginBottom: 12,
   },
   stepBadge: {
-    backgroundColor: '#10b981',
+    backgroundColor: theme.primary,
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
@@ -231,12 +231,12 @@ const createStyles = (theme: any) => StyleSheet.create({
   completeButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#10b981',
+    color: theme.primary,
     marginLeft: 6,
   },
   completedDate: {
     fontSize: 12,
-    color: '#10b981',
+    color: theme.primary,
     fontWeight: '600',
   },
   emptyState: {
