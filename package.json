@@ -18,6 +18,9 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:ci": "jest --ci --maxWorkers=2",
+    "test:coverage": "jest --coverage",
+    "maestro": "maestro test .maestro/flows",
+    "maestro:record": "maestro record",
     "prepare": "husky"
   },
   "dependencies": {

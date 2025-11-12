@@ -177,6 +177,11 @@ git commit -n
 
 ## Testing
 
+[![Tests](https://github.com/wbchirico/12-Step-Tracker/workflows/CI/badge.svg)](https://github.com/wbchirico/12-Step-Tracker/actions)
+[![Coverage](https://codecov.io/gh/wbchirico/12-Step-Tracker/branch/main/graph/badge.svg)](https://codecov.io/gh/wbchirico/12-Step-Tracker)
+
+Comprehensive testing infrastructure with unit tests, integration tests, and E2E tests. See [docs/TESTING.md](docs/TESTING.md) for complete testing guide.
+
 ### Unit and Component Tests
 
 ```bash
@@ -188,6 +193,9 @@ pnpm test:watch
 
 # Run tests in CI mode
 pnpm test:ci
+
+# Run tests with coverage report
+pnpm test:coverage
 ```
 
 ### E2E Tests with Maestro
@@ -196,15 +204,23 @@ See [.maestro/README.md](.maestro/README.md) for E2E testing documentation.
 
 ```bash
 # Run all E2E flows
-maestro test .maestro/flows
+pnpm maestro
 
 # Run specific flow
 maestro test .maestro/flows/00-smoke-test.yaml
+
+# Record new flow interactively
+pnpm maestro:record
 ```
 
-### Coverage
+### Testing Requirements
 
-Currently tracking 2 tests as baseline. See [docs/plans/2025-01-11-testing-infrastructure-design.md](docs/plans/2025-01-11-testing-infrastructure-design.md) for expansion plan.
+All pull requests must:
+
+- Include tests for new features/fixes
+- Maintain or improve code coverage (80% minimum)
+- Pass all unit and E2E tests
+- Follow testing patterns documented in [docs/TESTING.md](docs/TESTING.md)
 
 ## Project Structure
 

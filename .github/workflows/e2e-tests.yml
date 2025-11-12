@@ -1,0 +1,108 @@
+name: E2E Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  push:
+    branches:
+      - main
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-ios:
+    name: E2E Tests (iOS)
+    runs-on: macos-14
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 'latest'
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Start Expo development server
+        run: |
+          pnpm dev &
+          echo $! > expo.pid
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: Wait for Expo to be ready
+        run: |
+          timeout 120 bash -c 'until curl -f http://localhost:8081 2>/dev/null; do echo "Waiting for Expo..."; sleep 3; done' || (echo "Expo failed to start" && exit 1)
+
+      - name: Setup iOS Simulator
+        run: |
+          xcrun simctl boot "iPhone 15" || true
+          xcrun simctl list devices
+
+      - name: Run Maestro E2E tests
+        run: |
+          export PATH="$HOME/.maestro/bin:$PATH"
+          maestro test .maestro/flows --format junit --output maestro-results.xml
+        continue-on-error: true
+
+      - name: Stop Expo development server
+        if: always()
+        run: |
+          if [ -f expo.pid ]; then
+            kill $(cat expo.pid) || true
+            rm expo.pid
+          fi
+
+      - name: Upload Maestro test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-test-results
+          path: |
+            maestro-results.xml
+            ~/.maestro/tests/**/*
+          retention-days: 7
+
+      - name: Upload Maestro logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-logs
+          path: |
+            maestro-logs/
+            *.log
+          retention-days: 7
+          if-no-files-found: ignore

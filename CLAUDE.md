@@ -263,6 +263,51 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
 - **Smart Cancellation**: New commits auto-cancel outdated workflow runs
 - **Build Monitoring**: Web artifacts in GitHub, mobile builds in Expo dashboard
 
+## Testing Guidelines
+
+### Test Requirements
+
+All new code must include appropriate tests:
+- **Components**: Test user interactions, rendering, and state changes
+- **Contexts**: Test state management and provider behavior
+- **Screens**: Test navigation, form submission, and error handling
+- **Utilities**: Test pure functions and validation logic
+
+### Testing Patterns
+
+1. **Use Custom Render**: Import `renderWithProviders` from `test-utils/render` for components that need context
+2. **Mock Supabase**: Use MSW handlers in `__mocks__/handlers/` for API mocking
+3. **Test User Behavior**: Focus on user interactions, not implementation details
+4. **Fixtures**: Use test data from `test-utils/fixtures/` for consistent test data
+5. **Assertions**: Use React Native Testing Library queries and jest-native matchers
+
+### Coverage Requirements
+
+- **Minimum**: 80% coverage for statements, branches, functions, and lines
+- **CI Enforcement**: Coverage thresholds enforced in CI/CD pipeline
+- **Reporting**: Coverage reports uploaded to Codecov on every PR
+
+### E2E Testing
+
+- **Maestro Flows**: Add E2E tests for critical user journeys
+- **Test IDs**: Add `testID` props to components for reliable E2E selection
+- **Documentation**: Document test scenarios in `.maestro/README.md`
+
+### Running Tests
+
+```bash
+# Unit tests
+pnpm test              # Run all tests
+pnpm test:watch        # Watch mode for development
+pnpm test:coverage     # Generate coverage report
+
+# E2E tests
+pnpm maestro           # Run all Maestro flows
+pnpm maestro:record    # Record new flow interactively
+```
+
+See [docs/TESTING.md](docs/TESTING.md) for comprehensive testing guide.
+
 ## Code Patterns
 
 1. **Authentication Guards**: Root layout handles all auth routing logic centrally

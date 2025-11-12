@@ -16,7 +16,7 @@ module.exports = {
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?|@react-native/.*)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|msw|@mswjs/.*|@bundled-es-modules/.*|until-async)',
   ],
   testMatch: ['**/__tests__/**/*.test.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],
-  testPathIgnorePatterns: ['/node_modules/', '/worktrees/'],
+  testPathIgnorePatterns: ['/node_modules/'],
   collectCoverageFrom: [
     'app/**/*.{js,jsx,ts,tsx}',
     'components/**/*.{js,jsx,ts,tsx}',
@@ -25,14 +25,6 @@ module.exports = {
     '!**/*.d.ts',
     '!**/node_modules/**',
   ],
-  coverageThresholds: {
-    global: {
-      statements: 80,
-      branches: 80,
-      functions: 80,
-      lines: 80,
-    },
-  },
   coverageThreshold: {
     global: {
       statements: 80,
