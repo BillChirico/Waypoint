@@ -14,10 +14,12 @@ let AuthContext: any;
 let AuthContextType: any;
 
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const authModule = require('@/contexts/AuthContext');
   AuthContext = authModule.AuthContext;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   AuthContextType = authModule.AuthContextType;
-} catch (e) {
+} catch {
   // AuthContext not available in test environment
 }
 
@@ -107,7 +109,7 @@ export const mockUnauthenticatedContext: any = {
  * Create a wrapper component with necessary providers
  */
 function createWrapper(options: CustomRenderOptions = {}) {
-  const { themeMode = 'light', authState, withAuth = false } = options;
+  const { authState, withAuth = false } = options;
 
   return function Wrapper({ children }: { children: React.ReactNode }) {
     let content = children;
@@ -120,7 +122,8 @@ function createWrapper(options: CustomRenderOptions = {}) {
     }
 
     // Always wrap with ThemeProvider
-    return <ThemeProvider initialTheme={themeMode}>{content}</ThemeProvider>;
+    // Note: ThemeProvider doesn't accept initialTheme prop, it loads from AsyncStorage
+    return <ThemeProvider>{content}</ThemeProvider>;
   };
 }
 

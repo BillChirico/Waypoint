@@ -22,6 +22,10 @@ const TextInput = props => React.createElement('TextInput', props);
 // Mock ScrollView
 const ScrollView = props => React.createElement('ScrollView', props, props.children);
 
+// Mock KeyboardAvoidingView
+const KeyboardAvoidingView = props =>
+  React.createElement('KeyboardAvoidingView', props, props.children);
+
 // Mock FlatList
 const FlatList = props => React.createElement('FlatList', props);
 
@@ -149,6 +153,7 @@ module.exports = {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  KeyboardAvoidingView,
   FlatList,
   Image,
 

@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { render, fireEvent, waitFor } from '@/test-utils';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { Alert, Platform } from 'react-native';
 import SignupScreen from '@/app/signup';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,6 +21,23 @@ jest.mock('@/contexts/AuthContext', () => ({
   useAuth: jest.fn(),
 }));
 
+// Mock ThemeContext
+jest.mock('@/contexts/ThemeContext', () => ({
+  useTheme: jest.fn(() => ({
+    theme: {
+      background: '#f9fafb',
+      surface: '#ffffff',
+      text: '#111827',
+      textSecondary: '#6b7280',
+      primary: '#007AFF',
+      border: '#e5e7eb',
+    },
+    themeMode: 'light',
+    setThemeMode: jest.fn(),
+    isDark: false,
+  })),
+}));
+
 // Mock expo-router
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
@@ -28,7 +45,9 @@ jest.mock('expo-router', () => ({
 
 // Mock lucide-react-native
 jest.mock('lucide-react-native', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require('react');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const RN = require('react-native');
   const Heart = React.forwardRef((props: any, ref: any) =>
     React.createElement(RN.View, { ...props, ref, testID: 'Heart' })
@@ -43,7 +62,9 @@ jest.mock('lucide-react-native', () => {
 
 // Mock react-native-svg
 jest.mock('react-native-svg', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require('react');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const RN = require('react-native');
   const SvgDefault = React.forwardRef((props: any, ref: any) =>
     React.createElement(RN.View, { ...props, ref })
