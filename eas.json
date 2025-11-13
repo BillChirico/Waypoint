@@ -27,6 +27,8 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ascAppId": "$ASC_APP_ID"
+    }
   }
 }
