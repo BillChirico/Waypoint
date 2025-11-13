@@ -52,13 +52,17 @@ export function initializeSentry(): void {
       enableTracing: true,
 
       // Integrations
-      integrations: [
-        new Sentry.ReactNativeTracing({
-          tracingOrigins: ['localhost', /^\//],
-          enableUserInteractionTracing: true,
-          enableNativeFramesTracking: true,
-        }),
-      ],
+      // Note: Web doesn't support ReactNativeTracing as it's designed for native performance monitoring
+      integrations:
+        Platform.OS === 'web'
+          ? [] // Web doesn't support ReactNativeTracing
+          : [
+              new Sentry.ReactNativeTracing({
+                tracingOrigins: ['localhost', /^\//],
+                enableUserInteractionTracing: true,
+                enableNativeFramesTracking: true,
+              }),
+            ],
 
       // Privacy hooks
       beforeSend: privacyBeforeSend,
@@ -66,12 +70,6 @@ export function initializeSentry(): void {
 
       // Error sampling (100% of errors)
       sampleRate: 1.0,
-
-      // Platform-specific options
-      ...(Platform.OS === 'web' && {
-        // Web-specific config
-        integrations: [],
-      }),
     });
 
     console.log('[Sentry] Initialized successfully');
