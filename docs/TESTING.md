@@ -456,24 +456,299 @@ Solution:
 3. Look at `__tests__/examples/` for common patterns
 4. Check the vertical slice results: `docs/TESTING_VERTICAL_SLICE_RESULTS.md`
 
+## E2E Testing with Maestro
+
+### Overview
+
+Maestro is a mobile UI testing framework that allows you to write E2E tests in simple YAML format. Tests run on real devices or simulators.
+
+### Running Maestro Tests
+
+```bash
+# Run all flows
+pnpm maestro
+
+# Run specific flow
+maestro test .maestro/flows/01-authentication.yaml
+
+# Record new flow interactively
+pnpm maestro:record
+
+# Debug flow with detailed output
+maestro test --debug .maestro/flows/01-authentication.yaml
+
+# Test on specific device
+maestro test --device "iPhone 15 Pro" .maestro/flows/01-authentication.yaml
+```
+
+### Maestro Flow Structure
+
+Basic flow structure:
+
+```yaml
+appId: com.billchirico.twelvesteptracker
+---
+# Flow steps
+- launchApp
+- tapOn: 'Sign In'
+- inputText: 'test@example.com'
+- assertVisible: 'Welcome'
+```
+
+### Best Practices for E2E Tests
+
+1. **Use testID for Reliability** - Add `testID` props to components for consistent selection
+2. **Avoid Hardcoded Waits** - Use `assertVisible` instead of fixed delays
+3. **Keep Flows Focused** - One user journey per flow
+4. **Use Test Data** - Document test accounts in `.maestro/README.md`
+5. **Clean Up State** - Reset app state between flows when needed
+6. **Handle Async Operations** - Wait for loading states to complete
+
+### Available Flows
+
+- `00-smoke-test.yaml` - Basic app launch and login screen validation
+- `01-authentication.yaml` - Sign up and sign in flows
+- `02-onboarding.yaml` - New user onboarding process
+- More flows coming in Phase 4 implementation
+
+### Test Data Setup
+
+Create dedicated test accounts in Supabase for E2E testing. See `.maestro/README.md` for credentials and setup instructions.
+
+## CI/CD Integration
+
+### Automated Testing
+
+Tests run automatically on:
+
+- Every push to `main` or `develop` branches
+- Every pull request
+- Manual workflow dispatch
+
+### GitHub Actions Workflows
+
+**Unit Tests** (`.github/workflows/ci.yml`):
+
+```yaml
+test:
+  name: Unit Tests
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+    - uses: pnpm/action-setup@v4
+    - run: pnpm install --frozen-lockfile
+    - run: pnpm test:ci --coverage
+    - uses: codecov/codecov-action@v4
+```
+
+**E2E Tests** (`.github/workflows/e2e-tests.yml`):
+
+- Runs on macOS runners for iOS simulator access
+- Installs Maestro CLI
+- Starts Expo development server
+- Executes all Maestro flows
+- Uploads test results as artifacts
+
+### Coverage Requirements
+
+The project enforces minimum 80% code coverage:
+
+```javascript
+coverageThresholds: {
+  global: {
+    statements: 80,
+    branches: 80,
+    functions: 80,
+    lines: 80,
+  },
+}
+```
+
+Coverage reports are:
+
+- Generated on every test run
+- Uploaded to Codecov for tracking
+- Available as CI artifacts for 7 days
+- Enforced by branch protection rules
+
+### Branch Protection
+
+Main and develop branches require:
+
+- ✅ Unit tests passing
+- ✅ E2E tests passing (when enabled)
+- ✅ 80% code coverage maintained
+- ✅ At least 1 approval before merge
+- ✅ Linting and type checks passing
+
+### Monitoring Test Results
+
+**GitHub Actions**:
+
+- View workflow runs in the Actions tab
+- Download test artifacts for debugging
+- Check coverage trends over time
+
+**Codecov Dashboard**:
+
+- Track coverage changes per PR
+- View detailed coverage reports
+- Identify untested code paths
+- Set up notifications for coverage drops
+
+## Test Structure and Organization
+
+### Directory Layout
+
+```
+__tests__/
+  setup.ts                    # Global test configuration
+  examples/                   # Example test patterns
+    component.test.tsx        # Component testing example
+    integration.test.tsx      # Integration testing example
+  fixtures/                   # Test data factories
+    profiles.ts
+    tasks.ts
+    messages.ts
+    relationships.ts
+  lib/                        # Utility tests
+    validation.test.ts
+  components/                 # Component tests
+    Button.test.tsx
+
+__mocks__/                    # Module mocks
+  @/lib/supabase.ts
+  expo-router.ts
+  react-native.js
+
+mocks/                        # MSW configuration
+  server.ts                   # MSW server setup
+  db.ts                       # Mock database
+  handlers/                   # API endpoint handlers
+    auth.ts
+    profiles.ts
+    tasks.ts
+
+test-utils/                   # Testing utilities
+  index.ts                    # Re-exports all utilities
+  render.tsx                  # Custom render function
+  helpers.ts                  # Test helper functions
+
+.maestro/                     # E2E tests
+  flows/                      # Test flows
+    00-smoke-test.yaml
+    01-authentication.yaml
+  README.md                   # E2E test documentation
+```
+
+### Naming Conventions
+
+**Test Files**:
+
+- Unit tests: `[filename].test.ts`
+- Component tests: `[ComponentName].test.tsx`
+- Integration tests: `[feature].integration.test.tsx`
+- E2E tests: `[flow-number]-[flow-name].yaml`
+
+**Test Descriptions**:
+
+```typescript
+// Good
+it('should create task when sponsor submits form', () => {});
+it('should display error when email is invalid', () => {});
+
+// Avoid
+it('works', () => {});
+it('test task creation', () => {});
+```
+
+## Mocking Strategy
+
+### When to Use Module Mocks
+
+Use module mocks (`__mocks__/`) for:
+
+- Platform-specific APIs (SecureStore, AsyncStorage)
+- Navigation (Expo Router)
+- Native modules (Camera, Haptics)
+- External libraries with complex setup
+
+### When to Use MSW
+
+Use MSW (`mocks/`) for:
+
+- Supabase API calls
+- Integration tests with realistic data
+- Testing error scenarios
+- Testing network failures
+
+### Mock Priority
+
+1. **Module mocks** are applied globally via Jest configuration
+2. **MSW handlers** intercept network requests when server is running
+3. **Inline mocks** (`jest.fn()`) for specific test cases
+
+## Troubleshooting
+
+### Common Issues
+
+**Issue: Tests fail with "Cannot find module 'msw/node'"**
+
+Solution: MSW is configured for opt-in usage. Import and set up the server manually in your test file.
+
+**Issue: AsyncStorage errors**
+
+Solution: AsyncStorage is mocked globally. If you need custom behavior, mock it in your test file.
+
+**Issue: useColorScheme is not a function**
+
+Solution: This is mocked in `__mocks__/react-native.js`. Ensure the mock is being applied.
+
+**Issue: Tests are slow**
+
+Solution:
+
+- Use MSW to mock API calls instead of real requests
+- Avoid unnecessary `waitFor` calls
+- Use fixtures instead of creating data manually
+
+**Issue: Maestro flow fails on CI but works locally**
+
+Solution:
+
+- Check device/simulator availability on CI runner
+- Verify environment variables are set correctly
+- Ensure test data exists in test environment
+- Check Maestro logs in CI artifacts
+
+**Issue: Coverage threshold not met**
+
+Solution:
+
+- Run `pnpm test -- --coverage` to see uncovered lines
+- Add tests for uncovered branches and statements
+- Focus on critical paths first
+- Use coverage report to identify gaps
+
+### Getting Help
+
+1. Check existing test files for examples
+2. Review fixture factories in `__tests__/fixtures/`
+3. Look at `__tests__/examples/` for common patterns
+4. Check the vertical slice results: `docs/TESTING_VERTICAL_SLICE_RESULTS.md`
+5. Review test templates in `docs/templates/`
+6. See CI workflow definitions in `.github/workflows/`
+
+## Test Templates
+
+Pre-built templates are available in `docs/templates/`:
+
+- `component.test.template.tsx` - Component testing template
+- `hook.test.template.ts` - Custom hook testing template
+- `integration.test.template.tsx` - Integration test template
+- `maestro-flow.template.yaml` - Maestro E2E flow template
+
 ## Next Steps
 
-**Phase 2: Component Testing**
-
-- Expand component test coverage
-- Test all authentication screens
-- Test main app screens (tasks, messages, steps, profile)
-
-**Phase 3: Integration Testing**
-
-- Test complete user flows
-- Test error scenarios
-- Test edge cases
-
-**Phase 4: E2E Testing**
-
-- Complete Maestro test flows
-- Add CI integration for E2E tests
-- Test on real devices
-
-See [Issue #6](https://github.com/BillChirico/12-Step-Tracker/issues/6) for the complete implementation plan.
+See [Issue #6](https://github.com/BillChirico/12-Step-Tracker/issues/6) for the complete implementation plan and current progress.

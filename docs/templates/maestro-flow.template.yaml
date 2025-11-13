@@ -1,0 +1,350 @@
+# Maestro E2E Flow Template
+#
+# This template demonstrates best practices for writing Maestro E2E test flows.
+#
+# Usage:
+# 1. Copy this template to .maestro/flows/[NN]-[flow-name].yaml
+# 2. Replace [NN] with a flow number (e.g., 01, 02, 03)
+# 3. Replace [flow-name] with a descriptive name (e.g., authentication, task-creation)
+# 4. Update the flow steps to match your test scenario
+# 5. Remove this header comment
+#
+# Maestro Documentation: https://maestro.mobile.dev/
+
+# App identifier - must match your app's bundle ID (iOS) or package name (Android)
+appId: com.billchirico.twelvesteptracker
+
+# Environment variables (optional)
+# Use for configuration that changes between environments
+env:
+  TEST_EMAIL: test@example.com
+  TEST_PASSWORD: TestPassword123!
+
+# Flow metadata (optional but recommended)
+# Helps with organization and debugging
+---
+# Flow name and description
+name: [Flow Name]
+description: |
+  [Describe what this flow tests]
+
+  Prerequisites:
+  - [List any setup requirements]
+  - [e.g., Test account exists in database]
+  - [e.g., App is in a clean state]
+
+  Steps:
+  1. [High-level step 1]
+  2. [High-level step 2]
+  3. [High-level step 3]
+
+# Test tags for filtering (optional)
+tags:
+  - smoke
+  - critical
+  - [feature-name]
+
+---
+# Flow Steps
+# Each step is a YAML object with an action
+
+# ============================================================================
+# LAUNCH AND INITIAL STATE
+# ============================================================================
+
+# Launch the app
+- launchApp
+
+# Wait for app to be ready (alternative to hardcoded delays)
+- assertVisible: "Login"
+
+# ============================================================================
+# NAVIGATION
+# ============================================================================
+
+# Tap on text (most reliable for buttons with visible text)
+- tapOn: "Sign In"
+
+# Tap on element with testID (most reliable for elements without text)
+- tapOn:
+    id: "login-button"
+
+# Tap on element at specific point (use sparingly, brittle)
+- tapOn:
+    point: "50%,30"
+
+# Swipe (for scrolling or navigation)
+- swipe:
+    direction: UP
+    duration: 500
+
+# Scroll to element (better than swipe for finding elements)
+- scrollUntilVisible:
+    element:
+      text: "Profile Settings"
+    direction: DOWN
+    timeout: 10000
+
+# ============================================================================
+# INPUT AND FORM FILLING
+# ============================================================================
+
+# Input text into focused field
+- tapOn: "Email"
+- inputText: "${TEST_EMAIL}"
+
+# Input text into field with testID
+- tapOn:
+    id: "email-input"
+- inputText: "${TEST_EMAIL}"
+
+# Clear existing text before input
+- tapOn:
+    id: "email-input"
+- clearKeychain
+- inputText: "new@example.com"
+
+# Input text and press enter/return
+- tapOn: "Search"
+- inputText: "recovery|enter"
+
+# ============================================================================
+# ASSERTIONS
+# ============================================================================
+
+# Assert text is visible (most common assertion)
+- assertVisible: "Welcome back!"
+
+# Assert element with testID is visible
+- assertVisible:
+    id: "welcome-message"
+
+# Assert text is NOT visible
+- assertNotVisible: "Error message"
+
+# Assert element appears within timeout
+- assertVisible:
+    text: "Success"
+    timeout: 5000
+
+# Assert element with regex pattern
+- assertVisible:
+    text: "Tasks: [0-9]+"
+    regex: true
+
+# ============================================================================
+# WAITING
+# ============================================================================
+
+# Wait for element to appear (preferred over hardcoded waits)
+- assertVisible:
+    text: "Loading complete"
+    timeout: 10000
+
+# Wait for loading indicator to disappear
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Wait for specific duration (use sparingly, makes tests slower)
+- wait: 2000
+
+# ============================================================================
+# CONDITIONAL LOGIC
+# ============================================================================
+
+# Run step only if condition is true
+- runFlow:
+    when:
+      visible: "Skip Tutorial"
+    commands:
+      - tapOn: "Skip Tutorial"
+
+# Run different steps based on condition
+- runFlow:
+    when:
+      visible: "Login"
+    commands:
+      - tapOn: "Login"
+      - inputText: "${TEST_EMAIL}"
+    else:
+      - tapOn: "Continue"
+
+# ============================================================================
+# MULTIPLE ACTIONS IN SEQUENCE
+# ============================================================================
+
+# Complete login flow
+- tapOn: "Login"
+- assertVisible: "Email"
+- tapOn:
+    id: "email-input"
+- inputText: "${TEST_EMAIL}"
+- tapOn:
+    id: "password-input"
+- inputText: "${TEST_PASSWORD}"
+- tapOn: "Sign In"
+- assertVisible:
+    text: "Welcome"
+    timeout: 5000
+
+# ============================================================================
+# FORM SUBMISSION
+# ============================================================================
+
+# Fill and submit a form
+- tapOn: "Create Task"
+- assertVisible: "Task Title"
+
+# Fill title
+- tapOn:
+    id: "task-title-input"
+- inputText: "Complete Step 1"
+
+# Fill description
+- tapOn:
+    id: "task-description-input"
+- inputText: "Read the Big Book chapter 1"
+
+# Select from dropdown/picker (if applicable)
+- tapOn: "Select Sponsee"
+- tapOn: "Jane Doe"
+
+# Submit form
+- tapOn: "Submit"
+
+# Verify success
+- assertVisible:
+    text: "Task created successfully"
+    timeout: 5000
+- assertVisible: "Complete Step 1"
+
+# ============================================================================
+# TAB NAVIGATION
+# ============================================================================
+
+# Navigate between tabs
+- tapOn: "Tasks"
+- assertVisible: "My Tasks"
+
+- tapOn: "Messages"
+- assertVisible: "Conversations"
+
+- tapOn: "Profile"
+- assertVisible: "Account Settings"
+
+# ============================================================================
+# ERROR HANDLING
+# ============================================================================
+
+# Test validation errors
+- tapOn: "Submit"
+- assertVisible: "Email is required"
+
+# Test network errors (requires mocking or test environment)
+- tapOn: "Refresh"
+- assertVisible:
+    text: "Network error"
+    timeout: 5000
+
+# ============================================================================
+# CLEANUP
+# ============================================================================
+
+# Logout or reset app state (if needed for next test)
+- tapOn: "Profile"
+- scrollUntilVisible:
+    element:
+      text: "Sign Out"
+    direction: DOWN
+- tapOn: "Sign Out"
+- assertVisible: "Login"
+
+# ============================================================================
+# ADVANCED: SCREENSHOTS AND DEBUGGING
+# ============================================================================
+
+# Take screenshot at specific point (useful for debugging)
+- takeScreenshot: screenshots/[flow-name]-success.png
+
+# Add debug output (visible in test logs)
+- evalScript: console.log('Reached checkpoint 1')
+
+# ============================================================================
+# ADVANCED: SUBFLOWS AND REUSABILITY
+# ============================================================================
+
+# Run a reusable subflow (create separate YAML file)
+# Example: .maestro/flows/subflows/login.yaml
+- runFlow: subflows/login.yaml
+
+# Run subflow with parameters
+- runFlow:
+    file: subflows/create-task.yaml
+    env:
+      TASK_TITLE: "My Task"
+      TASK_DESCRIPTION: "Task description"
+
+# ============================================================================
+# BEST PRACTICES
+# ============================================================================
+
+# ✅ DO:
+# - Use testID for elements without visible text
+# - Use assertVisible instead of hardcoded waits
+# - Keep flows focused on one user journey
+# - Use descriptive names and comments
+# - Test both success and error scenarios
+# - Use environment variables for test data
+# - Add timeouts for async operations
+# - Take screenshots on failure (automatic)
+
+# ❌ DON'T:
+# - Use hardcoded delays (wait) unless necessary
+# - Use pixel coordinates (point) unless necessary
+# - Make flows too long (split into multiple flows)
+# - Test implementation details (focus on user behavior)
+# - Rely on timing (use assertions instead)
+# - Share state between flows (each flow should be independent)
+
+# ============================================================================
+# COMMON PATTERNS
+# ============================================================================
+
+# Pattern: Login
+# - tapOn: "Login"
+# - tapOn: { id: "email-input" }
+# - inputText: "${TEST_EMAIL}"
+# - tapOn: { id: "password-input" }
+# - inputText: "${TEST_PASSWORD}"
+# - tapOn: "Sign In"
+# - assertVisible: { text: "Welcome", timeout: 5000 }
+
+# Pattern: Create Item
+# - tapOn: "Create"
+# - tapOn: { id: "title-input" }
+# - inputText: "Item Title"
+# - tapOn: { id: "description-input" }
+# - inputText: "Item Description"
+# - tapOn: "Submit"
+# - assertVisible: { text: "Created successfully", timeout: 5000 }
+
+# Pattern: Edit Item
+# - tapOn: "Item Title"
+# - tapOn: "Edit"
+# - tapOn: { id: "title-input" }
+# - clearKeychain
+# - inputText: "Updated Title"
+# - tapOn: "Save"
+# - assertVisible: "Updated Title"
+
+# Pattern: Delete Item
+# - tapOn: "Item Title"
+# - tapOn: "Delete"
+# - tapOn: "Confirm"
+# - assertNotVisible: "Item Title"
+
+# Pattern: Handle Loading State
+# - tapOn: "Refresh"
+# - assertVisible: { id: "loading-spinner", timeout: 1000 }
+# - assertNotVisible: { id: "loading-spinner", timeout: 10000 }
+# - assertVisible: "Data loaded"

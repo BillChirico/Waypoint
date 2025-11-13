@@ -177,12 +177,12 @@ git commit -n
 
 ## Testing
 
-[![Tests](https://github.com/wbchirico/12-Step-Tracker/workflows/CI/badge.svg)](https://github.com/wbchirico/12-Step-Tracker/actions)
-[![Coverage](https://codecov.io/gh/wbchirico/12-Step-Tracker/branch/main/graph/badge.svg)](https://codecov.io/gh/wbchirico/12-Step-Tracker)
+[![Tests](https://github.com/BillChirico/12-Step-Tracker/workflows/CI/badge.svg)](https://github.com/BillChirico/12-Step-Tracker/actions)
+[![Coverage](https://codecov.io/gh/BillChirico/12-Step-Tracker/branch/main/graph/badge.svg)](https://codecov.io/gh/BillChirico/12-Step-Tracker)
 
-Comprehensive testing infrastructure with unit tests, integration tests, and E2E tests. See [docs/TESTING.md](docs/TESTING.md) for complete testing guide.
+This project uses comprehensive testing with unit tests, integration tests, and E2E tests. See [docs/TESTING.md](docs/TESTING.md) for detailed testing guide and best practices.
 
-### Unit and Component Tests
+### Quick Start
 
 ```bash
 # Run all tests
@@ -191,36 +191,81 @@ pnpm test
 # Run tests in watch mode (for development)
 pnpm test:watch
 
-# Run tests in CI mode
-pnpm test:ci
-
 # Run tests with coverage report
-pnpm test:coverage
+pnpm test -- --coverage
+
+# Run specific test file
+pnpm test path/to/test.test.ts
+```
+
+### Unit and Integration Tests
+
+The project uses **Jest** and **React Native Testing Library** for unit and integration testing:
+
+- ✅ **Jest** - Test runner and assertion library
+- ✅ **React Native Testing Library** - Component testing with user-centric queries
+- ✅ **MSW (Mock Service Worker)** - API mocking for Supabase calls
+- ✅ **Custom test utilities** - Helper functions and fixtures in `test-utils/`
+
+**Test Structure:**
+
+```
+__tests__/
+  fixtures/          # Test data factories
+  examples/          # Example test patterns
+  lib/              # Utility tests
+  components/       # Component tests
+mocks/              # MSW handlers and mock database
+test-utils/         # Custom render and helpers
 ```
 
 ### E2E Tests with Maestro
 
-See [.maestro/README.md](.maestro/README.md) for E2E testing documentation.
+The project uses **Maestro** for end-to-end testing on real devices and simulators.
 
 ```bash
 # Run all E2E flows
 pnpm maestro
 
 # Run specific flow
-maestro test .maestro/flows/00-smoke-test.yaml
+maestro test .maestro/flows/01-authentication.yaml
 
 # Record new flow interactively
 pnpm maestro:record
 ```
 
-### Testing Requirements
+See [.maestro/README.md](.maestro/README.md) for E2E testing documentation.
 
-All pull requests must:
+### Coverage Requirements
 
-- Include tests for new features/fixes
-- Maintain or improve code coverage (80% minimum)
-- Pass all unit and E2E tests
-- Follow testing patterns documented in [docs/TESTING.md](docs/TESTING.md)
+The project enforces **80% minimum code coverage**:
+
+- Statements: 80%
+- Branches: 80%
+- Functions: 80%
+- Lines: 80%
+
+Coverage is tracked in CI and reported to [Codecov](https://codecov.io).
+
+### Test Templates
+
+Pre-built test templates are available in `docs/templates/`:
+
+- `component.test.template.tsx` - Component testing
+- `hook.test.template.ts` - Custom hook testing
+- `integration.test.template.tsx` - Integration testing
+- `maestro-flow.template.yaml` - E2E flow testing
+
+### Writing Tests
+
+All new features must include appropriate tests:
+
+- **Components**: Test user interactions, rendering, and state changes
+- **Contexts**: Test state management and provider behavior
+- **Screens**: Test navigation, form submission, and error handling
+- **Utilities**: Test pure functions and validation logic
+
+See [docs/TESTING.md](docs/TESTING.md) for comprehensive testing guide.
 
 ## Project Structure
 
