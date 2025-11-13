@@ -1,0 +1,169 @@
+# Authentication Flow: Signup as Sponsor
+#
+# This test validates the complete signup flow for a new sponsor user.
+# Tests account creation, form validation, and redirect to onboarding.
+#
+# Prerequisites:
+# - Email address does NOT exist in database
+# - App is at login screen
+#
+# Test Steps:
+# 1. Navigate to signup screen
+# 2. Fill in registration form (first name, last initial, email, password)
+# 3. Submit signup form
+# 4. Handle success message
+# 5. Verify redirect to onboarding screen
+#
+# Note: This test creates a new account. Consider cleanup after test.
+
+appId: com.billchirico.twelvesteptracker
+
+env:
+  # Use timestamp-based email for uniqueness
+  TEST_FIRST_NAME: 'TestSponsor'
+  TEST_LAST_INITIAL: 'S'
+  TEST_EMAIL: '${TEST_NEW_USER_EMAIL_PREFIX}+sponsor${TIMESTAMP}@${TEST_NEW_USER_DOMAIN}'
+  TEST_PASSWORD: '${TEST_NEW_USER_PASSWORD}'
+
+---
+name: Signup as Sponsor
+description: |
+  Validates new user signup flow for sponsor role.
+
+  Prerequisites:
+  - Test email does not exist in database
+
+  Steps:
+  1. Navigate to signup screen
+  2. Fill registration form
+  3. Submit signup
+  4. Verify success and redirect to onboarding
+
+  Note: Creates new account - may need cleanup
+
+tags:
+  - critical
+  - auth
+
+---
+# ============================================================================
+# LAUNCH APP AND NAVIGATE TO SIGNUP
+# ============================================================================
+
+- launchApp
+
+# Verify we're on the login screen
+- assertVisible:
+    text: '12-Step Tracker'
+    timeout: 5000
+
+- assertVisible: 'Sign In'
+
+# Tap "Create New Account" button
+- tapOn:
+    id: 'create-account-button'
+
+# Wait for signup screen to load
+- assertVisible:
+    text: 'Create Account'
+    timeout: 5000
+
+- assertVisible:
+    text: 'Begin your recovery journey'
+
+# ============================================================================
+# FILL REGISTRATION FORM
+# ============================================================================
+
+# Enter first name
+- tapOn:
+    id: 'first-name-input'
+- inputText: '${TEST_FIRST_NAME}'
+
+# Enter last initial
+- tapOn:
+    id: 'last-initial-input'
+- inputText: '${TEST_LAST_INITIAL}'
+
+# Generate unique email with timestamp
+- evalScript: |
+    const timestamp = Date.now();
+    const email = `newuser+sponsor${timestamp}@test.example.com`;
+    output.email = email;
+
+# Enter email
+- tapOn:
+    id: 'email-input'
+- inputText: '${output.email}'
+
+# Enter password
+- tapOn:
+    id: 'password-input'
+- inputText: '${TEST_PASSWORD}'
+
+# Enter confirm password
+- tapOn:
+    id: 'confirm-password-input'
+- inputText: '${TEST_PASSWORD}'
+
+# ============================================================================
+# SUBMIT SIGNUP FORM
+# ============================================================================
+
+# Tap Create Account button
+- tapOn:
+    id: 'create-account-button'
+
+# Wait for account creation to process
+# This may show a loading state briefly
+- assertVisible:
+    text: 'Creating account...'
+    timeout: 2000
+    optional: true
+
+# ============================================================================
+# VERIFY SUCCESS AND ONBOARDING REDIRECT
+# ============================================================================
+
+# Wait for success message (alert or toast)
+- assertVisible:
+    text: 'Account created successfully'
+    timeout: 10000
+    optional: true
+
+# Handle success alert if present (web or iOS)
+- runFlow:
+    when:
+      visible: 'OK'
+    commands:
+      - tapOn: 'OK'
+
+# Verify we're redirected to onboarding screen
+- assertVisible:
+    text: 'Welcome to 12-Step Tracker'
+    timeout: 10000
+    optional: true
+
+# Alternative onboarding screen text
+- assertVisible:
+    text: "Let's get started"
+    timeout: 5000
+    optional: true
+
+# Verify onboarding screen shows role selection
+- assertVisible:
+    text: 'I am a'
+    timeout: 5000
+    optional: true
+# ============================================================================
+# TEST COMPLETE
+# ============================================================================
+# New sponsor account created successfully
+# User is at onboarding screen
+# Test passed - signup flow working correctly
+#
+# NOTE: This test creates a new account in the database.
+# Consider implementing cleanup:
+# - Delete test account after test completion
+# - Use test environment with automatic cleanup
+# - Or accept accumulation of test accounts

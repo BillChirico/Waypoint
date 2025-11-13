@@ -1,0 +1,125 @@
+# Authentication Flow: Google OAuth Sign In
+#
+# This test validates the Google OAuth authentication flow.
+# Tests OAuth popup, account selection, consent, and automatic profile creation.
+#
+# Prerequisites:
+# - Google OAuth is configured in Supabase
+# - Test Google account exists (TEST_GOOGLE_EMAIL)
+# - App has proper OAuth redirect URI configured
+#
+# Test Steps:
+# 1. Launch app
+# 2. Tap "Continue with Google" button
+# 3. Handle OAuth popup/webview
+# 4. Select Google account
+# 5. Grant permissions
+# 6. Verify redirect and profile creation
+# 7. Verify navigation to home or onboarding
+#
+# Note: OAuth testing can be complex and may require:
+# - Maestro's OAuth flow support
+# - Test user with less secure app access enabled
+# - Manual intervention for first-time consent
+# - Alternative: Mock OAuth responses in test environment
+
+appId: com.billchirico.twelvesteptracker
+
+env:
+  TEST_GOOGLE_EMAIL: '${TEST_GOOGLE_EMAIL}'
+  TEST_GOOGLE_PASSWORD: '${TEST_GOOGLE_PASSWORD}'
+
+---
+name: Google OAuth Sign In
+description: |
+  Validates Google OAuth authentication flow.
+
+  Prerequisites:
+  - Google OAuth configured in Supabase
+  - Test Google account exists
+  - OAuth redirect URI configured
+
+  Steps:
+  1. Launch app
+  2. Tap Google sign in
+  3. Complete OAuth flow
+  4. Verify profile creation and navigation
+
+  Note: OAuth testing may require special setup or be skipped in CI
+
+tags:
+  - auth
+  - oauth
+
+---
+# ============================================================================
+# NOTE: PLACEHOLDER FOR GOOGLE OAUTH TESTING
+# ============================================================================
+#
+# Google OAuth testing is complex and may not be fully automated due to:
+# 1. Google's security measures (CAPTCHA, device verification)
+# 2. OAuth popup handling varies by platform (web vs mobile)
+# 3. First-time consent screens
+# 4. Two-factor authentication requirements
+#
+# This flow is a PLACEHOLDER and should be:
+# - Tested manually during development
+# - Implemented with Maestro's OAuth support when available
+# - Mocked in CI/CD environment
+# - Or skipped in automated test runs
+#
+# For now, this test will verify the button exists but won't complete OAuth.
+# ============================================================================
+
+# ============================================================================
+# LAUNCH APP AND VERIFY GOOGLE BUTTON
+# ============================================================================
+
+- launchApp
+
+# Verify we're on the login screen
+- assertVisible:
+    text: '12-Step Tracker'
+    timeout: 5000
+
+- assertVisible: 'Sign In'
+
+# Verify Google sign-in button exists
+- assertVisible:
+    id: 'google-sign-in-button'
+    timeout: 3000
+
+- assertVisible:
+    text: 'Continue with Google'
+# ============================================================================
+# PLACEHOLDER: GOOGLE OAUTH FLOW
+# ============================================================================
+#
+# TODO: Implement complete Google OAuth flow when:
+# 1. Maestro adds better OAuth support
+# 2. Test environment can mock OAuth responses
+# 3. Google test accounts are properly configured
+#
+# Expected steps:
+# - tapOn: { id: "google-sign-in-button" }
+# - Wait for OAuth popup/webview
+# - Enter Google credentials
+# - Grant permissions
+# - Wait for redirect
+# - Verify profile creation
+# - Verify navigation to home or onboarding
+#
+# ============================================================================
+
+# ============================================================================
+# TEST STATUS: PARTIAL
+# ============================================================================
+# This test verifies Google OAuth button is present
+# Full OAuth flow testing requires additional setup
+# Consider this test as "smoke test" for OAuth button visibility
+#
+# For complete OAuth testing:
+# - Use manual testing
+# - Set up OAuth mocking in test environment
+# - Use Maestro Cloud with OAuth support
+# - Or accept OAuth testing as manual-only

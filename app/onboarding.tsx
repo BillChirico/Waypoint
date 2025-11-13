@@ -91,6 +91,7 @@ export default function OnboardingScreen() {
             <View style={styles.inputContainer}>
               <Text style={styles.label}>First Name</Text>
               <TextInput
+                testID="onboarding-first-name-input"
                 style={styles.input}
                 placeholder="John"
                 placeholderTextColor={theme.textTertiary}
@@ -106,6 +107,7 @@ export default function OnboardingScreen() {
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Last Initial</Text>
               <TextInput
+                testID="onboarding-last-initial-input"
                 ref={lastInitialRef}
                 style={styles.input}
                 placeholder="D"
@@ -121,6 +123,7 @@ export default function OnboardingScreen() {
           </View>
 
           <TouchableOpacity
+            testID="onboarding-continue-button"
             style={[
               styles.button,
               (!firstName || !lastInitial || lastInitial.length !== 1) && styles.buttonDisabled,
@@ -142,7 +145,11 @@ export default function OnboardingScreen() {
         <Text style={styles.subtitle}>When did you begin your sobriety journey?</Text>
 
         <View style={styles.dateContainer}>
-          <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
+          <TouchableOpacity
+            testID="onboarding-date-button"
+            style={styles.dateButton}
+            onPress={() => setShowDatePicker(true)}
+          >
             <Calendar size={24} color="#007AFF" />
             <Text style={styles.dateText}>
               {sobrietyDate.toLocaleDateString('en-US', {
@@ -205,6 +212,7 @@ export default function OnboardingScreen() {
           )}
 
           <TouchableOpacity
+            testID="onboarding-complete-button"
             style={[
               styles.button,
               needsName ? styles.flexButton : styles.fullWidthButton,

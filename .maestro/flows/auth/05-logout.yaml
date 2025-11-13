@@ -1,0 +1,129 @@
+# Authentication Flow: Logout
+#
+# This test validates the logout flow and proper session cleanup.
+# Tests navigation to profile, logout action, and return to login screen.
+#
+# Prerequisites:
+# - User must be logged in
+# - Can start from any authenticated screen
+#
+# Test Steps:
+# 1. Navigate to Profile tab
+# 2. Scroll to Sign Out button
+# 3. Tap Sign Out
+# 4. Handle confirmation if present
+# 5. Verify return to login screen
+# 6. Verify session is cleared
+
+appId: com.billchirico.twelvesteptracker
+
+---
+name: Logout Flow
+description: |
+  Validates user logout and session cleanup.
+
+  Prerequisites:
+  - User is logged in
+
+  Steps:
+  1. Navigate to Profile
+  2. Find and tap Sign Out
+  3. Confirm logout
+  4. Verify return to login
+
+tags:
+  - critical
+  - auth
+
+---
+# ============================================================================
+# SETUP - LOGIN FIRST
+# ============================================================================
+
+# Use shared subflow to log in
+- runFlow: flows/shared/_login-as-sponsee.yaml
+
+# Verify we're logged in and on home screen
+- assertVisible:
+    id: 'tab-bar'
+    timeout: 5000
+
+# ============================================================================
+# NAVIGATE TO PROFILE
+# ============================================================================
+
+# Tap Profile tab
+- tapOn:
+    id: 'tab-profile'
+
+# Wait for profile screen to load
+- assertVisible:
+    text: 'Profile'
+    timeout: 5000
+
+# ============================================================================
+# SCROLL TO SIGN OUT
+# ============================================================================
+
+# Scroll down to find Sign Out button
+# It should be at the bottom of the profile screen
+- scrollUntilVisible:
+    element:
+      text: 'Sign Out'
+    direction: DOWN
+    timeout: 10000
+
+# ============================================================================
+# PERFORM LOGOUT
+# ============================================================================
+
+# Tap Sign Out button
+- tapOn: 'Sign Out'
+
+# Handle confirmation dialog if present
+- runFlow:
+    when:
+      visible: 'Confirm'
+    commands:
+      - tapOn: 'Confirm'
+
+# Alternative: Some apps use a secondary "Sign Out" button in dialog
+- runFlow:
+    when:
+      visible:
+        text: 'Sign Out'
+    commands:
+      - tapOn: 'Sign Out'
+
+# ============================================================================
+# VERIFY LOGOUT SUCCESS
+# ============================================================================
+
+# Verify we're back at login screen
+- assertVisible:
+    text: '12-Step Tracker'
+    timeout: 5000
+
+- assertVisible:
+    text: 'Your journey to recovery'
+    timeout: 3000
+
+- assertVisible: 'Sign In'
+
+# Verify we can see login form elements
+- assertVisible:
+    id: 'email-input'
+    timeout: 3000
+
+- assertVisible:
+    id: 'password-input'
+
+# Verify tab navigation is NOT visible (user logged out)
+- assertNotVisible:
+    id: 'tab-bar'
+# ============================================================================
+# TEST COMPLETE
+# ============================================================================
+# User is now logged out and at login screen
+# Session is cleared successfully
+# Test passed - logout flow working correctly

@@ -1,0 +1,112 @@
+# Authentication Flow: Login
+#
+# This test validates the login flow for existing users with email/password credentials.
+# Tests successful login, navigation to home screen, and proper session management.
+#
+# Prerequisites:
+# - Test account exists in database (TEST_SPONSEE_EMAIL)
+# - App is at login screen
+#
+# Test Steps:
+# 1. Launch app and verify login screen
+# 2. Enter test credentials
+# 3. Submit login form
+# 4. Verify successful login and navigation to home
+# 5. Verify tab navigation is accessible
+
+appId: com.billchirico.twelvesteptracker
+
+env:
+  TEST_EMAIL: '${TEST_SPONSEE_EMAIL}'
+  TEST_PASSWORD: '${TEST_SPONSEE_PASSWORD}'
+
+---
+name: Login Flow
+description: |
+  Validates user login with existing credentials.
+
+  Prerequisites:
+  - Test account exists (sponsee1@test.example.com)
+  - Account has completed onboarding
+
+  Steps:
+  1. Launch app
+  2. Enter credentials
+  3. Submit login
+  4. Verify home screen
+
+tags:
+  - smoke
+  - critical
+  - auth
+
+---
+# ============================================================================
+# LAUNCH APP AND INITIAL STATE
+# ============================================================================
+
+- launchApp
+
+# Verify we're on the login screen
+- assertVisible:
+    text: '12-Step Tracker'
+    timeout: 5000
+
+- assertVisible:
+    text: 'Your journey to recovery'
+    timeout: 3000
+
+- assertVisible: 'Sign In'
+
+# ============================================================================
+# ENTER CREDENTIALS
+# ============================================================================
+
+# Enter email
+- tapOn:
+    id: 'email-input'
+- inputText: '${TEST_EMAIL}'
+
+# Verify email was entered
+- assertVisible: '${TEST_EMAIL}'
+
+# Enter password
+- tapOn:
+    id: 'password-input'
+- inputText: '${TEST_PASSWORD}'
+
+# ============================================================================
+# SUBMIT LOGIN
+# ============================================================================
+
+# Tap sign in button
+- tapOn:
+    id: 'sign-in-button'
+
+# Wait for login to process and navigate to home
+- assertVisible:
+    text: 'Welcome'
+    timeout: 10000
+
+# ============================================================================
+# VERIFY HOME SCREEN
+# ============================================================================
+
+# Verify tab navigation is visible
+- assertVisible:
+    id: 'tab-bar'
+    timeout: 5000
+
+# Verify we can see home tab elements
+- assertVisible: 'Home'
+
+# Verify other tabs are accessible
+- assertVisible: 'Steps'
+- assertVisible: 'Journey'
+- assertVisible: 'Tasks'
+- assertVisible: 'Profile'
+# ============================================================================
+# TEST COMPLETE
+# ============================================================================
+# User is now logged in and at home screen
+# Test passed - login flow working correctly

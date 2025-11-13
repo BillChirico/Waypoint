@@ -1,0 +1,170 @@
+# Onboarding Flow: Sponsee/Both Roles
+#
+# This test validates the complete onboarding flow for a new user.
+# Since the current implementation sets role to "both" by default,
+# this flow tests the name collection and sobriety date setup.
+#
+# Prerequisites:
+# - User account exists but has NOT completed onboarding
+# - Profile has first_name='User' or missing first_name
+# - App redirects to onboarding screen after login
+#
+# Test Steps:
+# 1. Login with new account (or use signup flow)
+# 2. Complete name collection (first name, last initial)
+# 3. Set sobriety date
+# 4. Complete onboarding
+# 5. Verify redirect to home screen
+
+appId: com.billchirico.twelvesteptracker
+
+env:
+  # For testing, use a pre-created account that needs onboarding
+  # Or create one via signup flow first
+  TEST_EMAIL: '${TEST_SPONSEE_EMAIL}'
+  TEST_PASSWORD: '${TEST_SPONSEE_PASSWORD}'
+  TEST_FIRST_NAME: 'Jane'
+  TEST_LAST_INITIAL: 'D'
+
+---
+name: Onboarding Flow (Sponsee/Both Roles)
+description: |
+  Validates complete onboarding process for new users.
+
+  Prerequisites:
+  - Account exists but needs onboarding
+  - Profile missing name or has default "User" name
+
+  Steps:
+  1. Navigate to onboarding screen
+  2. Enter name information
+  3. Set sobriety date
+  4. Complete setup
+  5. Verify navigation to home
+
+tags:
+  - critical
+  - auth
+  - onboarding
+
+---
+# ============================================================================
+# SETUP - ENSURE USER NEEDS ONBOARDING
+# ============================================================================
+#
+# NOTE: This flow assumes the test account exists but needs onboarding.
+# If starting from fresh signup, the signup flow will automatically
+# redirect to onboarding.
+#
+# For this test, we'll assume we're already at the onboarding screen.
+# In a complete test suite, you might:
+# 1. Sign up a new account (redirects to onboarding)
+# 2. Or manually navigate to onboarding for testing
+# ============================================================================
+
+- launchApp
+
+# For this test, we assume after login/signup we're at onboarding
+# If testing from existing account, we'd need to ensure it needs onboarding
+
+# ============================================================================
+# STEP 1: NAME COLLECTION
+# ============================================================================
+
+# Verify we're on the onboarding screen
+- assertVisible:
+    text: 'Welcome to 12-Step Tracker'
+    timeout: 10000
+
+- assertVisible:
+    text: "Let's get to know you"
+    timeout: 3000
+
+# Verify name collection step
+- assertVisible:
+    text: "What's your name?"
+    timeout: 3000
+
+# Enter first name
+- tapOn:
+    id: 'onboarding-first-name-input'
+- inputText: '${TEST_FIRST_NAME}'
+
+# Enter last initial
+- tapOn:
+    id: 'onboarding-last-initial-input'
+- inputText: '${TEST_LAST_INITIAL}'
+
+# Tap Continue to next step
+- tapOn:
+    id: 'onboarding-continue-button'
+
+# ============================================================================
+# STEP 2: SOBRIETY DATE
+# ============================================================================
+
+# Verify we're on the sobriety date step
+- assertVisible:
+    text: 'Your Sobriety Date'
+    timeout: 5000
+
+- assertVisible:
+    text: 'When did you begin your sobriety journey?'
+
+# Verify date display
+- assertVisible:
+    id: 'onboarding-date-button'
+    timeout: 3000
+
+# Note: Date picker interaction is platform-specific and complex
+# For this test, we'll accept the default date (today)
+# In a more comprehensive test, we'd:
+# 1. Tap the date button
+# 2. Navigate the date picker
+# 3. Select a specific date
+# 4. Confirm the selection
+
+# For now, we'll verify the button exists and continue
+- assertVisible: 'Days Sober'
+
+# ============================================================================
+# STEP 3: COMPLETE SETUP
+# ============================================================================
+
+# Tap Complete Setup button
+- tapOn:
+    id: 'onboarding-complete-button'
+
+# Wait for setup to process
+- assertVisible:
+    text: 'Setting up...'
+    timeout: 2000
+    optional: true
+
+# ============================================================================
+# VERIFY SUCCESSFUL COMPLETION
+# ============================================================================
+
+# Verify we're redirected to home screen
+- assertVisible:
+    text: 'Welcome'
+    timeout: 10000
+
+# Verify tab navigation is visible (user is authenticated and onboarded)
+- assertVisible:
+    id: 'tab-bar'
+    timeout: 5000
+
+# Verify we can see home tab elements
+- assertVisible: 'Home'
+- assertVisible: 'Steps'
+- assertVisible: 'Journey'
+- assertVisible: 'Tasks'
+- assertVisible: 'Profile'
+# ============================================================================
+# TEST COMPLETE
+# ============================================================================
+# User has successfully completed onboarding
+# Profile is updated with name and sobriety date
+# User is now at home screen and can use the app
+# Test passed - onboarding flow working correctly

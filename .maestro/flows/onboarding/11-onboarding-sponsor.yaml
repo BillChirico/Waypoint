@@ -1,0 +1,132 @@
+# Onboarding Flow: Sponsor
+#
+# This test validates the onboarding flow for sponsor users.
+# Currently, the app sets all users to "both" role by default,
+# so this test is identical to sponsee onboarding but documents
+# sponsor-specific expectations for future implementation.
+#
+# Prerequisites:
+# - Sponsor account exists but has NOT completed onboarding
+# - Profile has first_name='User' or missing first_name
+#
+# Test Steps:
+# 1. Complete name collection (first name, last initial)
+# 2. Set sobriety date
+# 3. Complete onboarding
+# 4. Verify redirect to home screen
+#
+# Future Enhancement:
+# - When role selection is added, this test should select "Sponsor" role
+# - Verify sponsor-specific features are accessible (invite codes, manage tasks)
+
+appId: com.billchirico.twelvesteptracker
+
+env:
+  TEST_EMAIL: '${TEST_SPONSOR_EMAIL}'
+  TEST_PASSWORD: '${TEST_SPONSOR_PASSWORD}'
+  TEST_FIRST_NAME: 'John'
+  TEST_LAST_INITIAL: 'S'
+
+---
+name: Onboarding Flow (Sponsor)
+description: |
+  Validates onboarding process for sponsor users.
+
+  Prerequisites:
+  - Sponsor account exists but needs onboarding
+
+  Steps:
+  1. Navigate to onboarding screen
+  2. Enter name information
+  3. Set sobriety date
+  4. Complete setup
+  5. Verify navigation to home
+
+tags:
+  - critical
+  - auth
+  - onboarding
+  - sponsor
+
+---
+# ============================================================================
+# STEP 1: NAME COLLECTION
+# ============================================================================
+
+- launchApp
+
+# Verify we're on the onboarding screen
+- assertVisible:
+    text: 'Welcome to 12-Step Tracker'
+    timeout: 10000
+
+- assertVisible:
+    text: "Let's get to know you"
+    timeout: 3000
+
+# Enter first name
+- tapOn:
+    id: 'onboarding-first-name-input'
+- inputText: '${TEST_FIRST_NAME}'
+
+# Enter last initial
+- tapOn:
+    id: 'onboarding-last-initial-input'
+- inputText: '${TEST_LAST_INITIAL}'
+
+# Continue to next step
+- tapOn:
+    id: 'onboarding-continue-button'
+
+# ============================================================================
+# STEP 2: SOBRIETY DATE
+# ============================================================================
+
+# Verify sobriety date step
+- assertVisible:
+    text: 'Your Sobriety Date'
+    timeout: 5000
+
+- assertVisible:
+    id: 'onboarding-date-button'
+    timeout: 3000
+
+# Accept default date for now
+- assertVisible: 'Days Sober'
+
+# ============================================================================
+# STEP 3: COMPLETE SETUP
+# ============================================================================
+
+# Complete onboarding
+- tapOn:
+    id: 'onboarding-complete-button'
+
+# Wait for completion
+- assertVisible:
+    text: 'Setting up...'
+    timeout: 2000
+    optional: true
+
+# ============================================================================
+# VERIFY SUCCESSFUL COMPLETION
+# ============================================================================
+
+# Verify redirect to home
+- assertVisible:
+    text: 'Welcome'
+    timeout: 10000
+
+# Verify tab navigation
+- assertVisible:
+    id: 'tab-bar'
+    timeout: 5000
+
+# Verify sponsor can access all tabs (including Manage Tasks)
+- assertVisible: 'Home'
+- assertVisible: 'Manage'
+# ============================================================================
+# TEST COMPLETE
+# ============================================================================
+# Sponsor has successfully completed onboarding
+# Can access sponsor-specific features (manage tasks, invite codes)
