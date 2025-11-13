@@ -78,9 +78,9 @@ const TestNavigationLogic: React.FC<{
       onNavigate('/login');
     } else if (!user && !inAuthScreen) {
       onNavigate('/login');
-    } else if (user && profile && profile.role && (inAuthScreen || inOnboarding)) {
+    } else if (user && profile && profile.sobriety_date && (inAuthScreen || inOnboarding)) {
       onNavigate('/(tabs)');
-    } else if (user && profile && !profile.role && !inOnboarding) {
+    } else if (user && profile && !profile.sobriety_date && !inOnboarding) {
       onNavigate('/onboarding');
     } else if (user && !profile && !inOnboarding) {
       onNavigate('/onboarding');
@@ -108,8 +108,8 @@ describe('RootLayoutNav - OAuth Callback Navigation', () => {
     email: 'test@example.com',
     first_name: 'Test',
     last_initial: 'U',
-    role: null, // No role set - should go to onboarding
-    sobriety_date: null,
+    role: undefined,
+    sobriety_date: undefined, // No sobriety_date set - should go to onboarding
     timezone: 'America/New_York',
     notification_preferences: {
       tasks: true,
@@ -143,7 +143,7 @@ describe('RootLayoutNav - OAuth Callback Navigation', () => {
   });
 
   describe('OAuth Callback Bug', () => {
-    it('should redirect to onboarding after OAuth sign-in when profile is created without role', async () => {
+    it('should redirect to onboarding after OAuth sign-in when profile is created without sobriety_date', async () => {
       // Simulate OAuth callback - hash with access token present
       global.window.location.hash =
         '#access_token=mock-token&refresh_token=mock-refresh&type=signup';
@@ -216,11 +216,11 @@ describe('RootLayoutNav - OAuth Callback Navigation', () => {
     });
 
     it('should redirect authenticated user with profile to tabs when on auth screen', () => {
-      const profileWithRole = { ...mockProfile, role: 'sponsor' as const };
+      const profileWithSobrietyDate = { ...mockProfile, sobriety_date: '2024-01-01' };
 
       (useAuth as jest.Mock).mockReturnValue({
         user: mockUser,
-        profile: profileWithRole,
+        profile: profileWithSobrietyDate,
         loading: false,
       });
       (useSegments as jest.Mock).mockReturnValue(['login']);
@@ -230,7 +230,7 @@ describe('RootLayoutNav - OAuth Callback Navigation', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/(tabs)');
     });
 
-    it('should redirect user without role to onboarding', () => {
+    it('should redirect user without sobriety_date to onboarding', () => {
       (useAuth as jest.Mock).mockReturnValue({
         user: mockUser,
         profile: mockProfile,

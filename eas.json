@@ -23,6 +23,11 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "ascAppId": "6755243828",
+        "bundleIdentifier": "com.volvoxllc.twelvesteptracker"
+      }
+    }
   }
 }

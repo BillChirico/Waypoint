@@ -33,9 +33,9 @@ function RootLayoutNav() {
       router.replace('/login');
     } else if (!user && !inAuthScreen) {
       router.replace('/login');
-    } else if (user && profile && profile.role && (inAuthScreen || inOnboarding)) {
+    } else if (user && profile && profile.sobriety_date && (inAuthScreen || inOnboarding)) {
       router.replace('/(tabs)');
-    } else if (user && profile && !profile.role && !inOnboarding) {
+    } else if (user && profile && !profile.sobriety_date && !inOnboarding) {
       router.replace('/onboarding');
     } else if (user && !profile && !inOnboarding) {
       router.replace('/onboarding');
