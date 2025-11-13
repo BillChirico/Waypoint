@@ -33,6 +33,9 @@ module.exports = {
     '!**/node_modules/**',
   ],
   coverageThreshold: {
+    // Current thresholds (gradually increasing toward 80% target)
+    // TODO: Incrementally raise these as more tests are added
+    // Target: statements: 80, branches: 80, functions: 80, lines: 80
     global: {
       statements: 40,
       branches: 40,
