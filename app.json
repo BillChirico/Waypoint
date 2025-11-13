@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "ca075b23-5398-4570-a6c4-286468f78eb1"
+      }
+    },
+    "name": "12-Step Tracker",
+    "owner": "volvox-llc",
+    "slug": "twelve-step-tracker",
+    "scheme": "twelvesteptracker",
+    "icon": "./assets/images/icon.png",
+    "ios": {
+      "bundleIdentifier": "com.volvoxllc.twelvesteptracker",
+      "icon": "./assets/images/icon.png",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    }
+  }
+}

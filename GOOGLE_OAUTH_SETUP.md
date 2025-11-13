@@ -63,8 +63,8 @@ For the mobile app to work with Google OAuth:
 
 1. The app uses the deep link scheme `12stepstracker://`
 2. Make sure this matches the scheme in `app.json`
-3. For iOS, ensure the bundle identifier is correct: `com.billchirico.12steptracker`
-4. For Android, ensure the package name is correct: `com.billchirico.twelvesteptracker`
+3. For iOS, ensure the bundle identifier is correct: `com.volvoxllc.twelvesteptracker`
+4. For Android, ensure the package name is correct: `com.volvoxllc.twelvesteptracker`
 
 ## Troubleshooting
 
