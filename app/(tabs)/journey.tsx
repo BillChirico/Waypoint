@@ -16,6 +16,7 @@ import {
   Target,
 } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useDaysSober } from '@/hooks/useDaysSober';
 
 type TimelineEventType =
   | 'sobriety_start'
@@ -48,6 +49,7 @@ interface TimelineEvent {
 export default function JourneyScreen() {
   const { profile } = useAuth();
   const { theme } = useTheme();
+  const { daysSober, loading: loadingDaysSober } = useDaysSober();
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -230,14 +232,6 @@ export default function JourneyScreen() {
     }
   };
 
-  const getDaysSober = () => {
-    if (!profile?.sobriety_date) return 0;
-    const sobrietyDate = new Date(profile.sobriety_date);
-    const today = new Date();
-    const diff = today.getTime() - sobrietyDate.getTime();
-    return Math.floor(diff / (1000 * 60 * 60 * 24));
-  };
-
   const getIcon = (iconType: string, color: string) => {
     const size = 20;
     switch (iconType) {
@@ -314,7 +308,7 @@ export default function JourneyScreen() {
             <View style={styles.statMain}>
               <TrendingUp size={32} color={theme.primary} />
               <View style={styles.statMainContent}>
-                <Text style={styles.statMainNumber}>{getDaysSober()}</Text>
+                <Text style={styles.statMainNumber}>{loadingDaysSober ? '...' : daysSober}</Text>
                 <Text style={styles.statMainLabel}>Days Sober</Text>
               </View>
             </View>
