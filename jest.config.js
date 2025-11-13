@@ -9,6 +9,7 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/$1',
     // Mock react-native to avoid ESM/Flow import issues
     '^react-native$': '<rootDir>/__mocks__/react-native.js',
+    '^react-native-svg$': '<rootDir>/__mocks__/react-native-svg.tsx',
     // Mock expo packages to avoid virtual env issues
     '^expo$': '<rootDir>/__mocks__/expo.ts',
     '^expo/virtual/env$': '<rootDir>/__mocks__/expo.ts',
