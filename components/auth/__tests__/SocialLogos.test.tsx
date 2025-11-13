@@ -66,4 +66,16 @@ describe('AppleLogo', () => {
     const svg = UNSAFE_getByType('Svg');
     expect(svg.props.style).toEqual({ marginRight: 12 });
   });
+
+  it('renders with default color', () => {
+    const { UNSAFE_getByType } = render(<AppleLogo />);
+    const path = UNSAFE_getByType('Path');
+    expect(path.props.fill).toBe('#000000');
+  });
+
+  it('renders with custom color for dark mode', () => {
+    const { UNSAFE_getByType } = render(<AppleLogo color="#FFFFFF" />);
+    const path = UNSAFE_getByType('Path');
+    expect(path.props.fill).toBe('#FFFFFF');
+  });
 });
