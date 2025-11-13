@@ -17,6 +17,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/lib/supabase';
+import { useDaysSober } from '@/hooks/useDaysSober';
 import {
   LogOut,
   Heart,
@@ -114,13 +115,14 @@ export default function ProfileScreen() {
     fetchRelationships();
   }, [profile]);
 
-  const getDaysSober = () => {
-    if (!profile?.sobriety_date) return 0;
-    const sobrietyDate = new Date(profile.sobriety_date);
-    const today = new Date();
-    const diff = today.getTime() - sobrietyDate.getTime();
-    return Math.floor(diff / (1000 * 60 * 60 * 24));
-  };
+  // Use hook for current user's days sober
+  const {
+    daysSober,
+    journeyStartDate,
+    currentStreakStartDate,
+    hasSlipUps,
+    loading: loadingDaysSober,
+  } = useDaysSober();
 
   const generateInviteCode = async () => {
     if (!profile) return;
@@ -671,20 +673,32 @@ export default function ProfileScreen() {
           <Heart size={24} color={theme.primary} fill={theme.primary} />
           <Text style={styles.sobrietyTitle}>Sobriety Journey</Text>
         </View>
-        <Text style={styles.daysSober}>{getDaysSober()} Days</Text>
+        <Text style={styles.daysSober}>{loadingDaysSober ? '...' : `${daysSober} Days`}</Text>
         <View style={styles.sobrietyDateContainer}>
-          <Text style={styles.sobrietyDate}>
-            Since{' '}
-            {new Date(profile?.sobriety_date || '').toLocaleDateString('en-US', {
+          {journeyStartDate && (
+            <Text style={styles.journeyStartDate}>
+              Journey started:{' '}
+              {new Date(journeyStartDate).toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </Text>
+          )}
+          <TouchableOpacity style={styles.editButton} onPress={handleEditSobrietyDate}>
+            <Edit2 size={16} color={theme.primary} />
+          </TouchableOpacity>
+        </View>
+        {hasSlipUps && currentStreakStartDate && (
+          <Text style={styles.currentStreakDate}>
+            Current streak since{' '}
+            {new Date(currentStreakStartDate).toLocaleDateString('en-US', {
               month: 'long',
               day: 'numeric',
               year: 'numeric',
             })}
           </Text>
-          <TouchableOpacity style={styles.editButton} onPress={handleEditSobrietyDate}>
-            <Edit2 size={16} color={theme.primary} />
-          </TouchableOpacity>
-        </View>
+        )}
         <TouchableOpacity style={styles.slipUpButton} onPress={handleLogSlipUp}>
           <AlertCircle size={18} color="#ffffff" />
           <Text style={styles.slipUpButtonText}>Log a Slip Up</Text>
@@ -1333,6 +1347,18 @@ const createStyles = (theme: any) =>
       fontSize: 14,
       fontFamily: theme.fontRegular,
       color: theme.textSecondary,
+    },
+    journeyStartDate: {
+      fontSize: 14,
+      fontFamily: theme.fontRegular,
+      color: theme.textSecondary,
+    },
+    currentStreakDate: {
+      fontSize: 14,
+      fontFamily: theme.fontRegular,
+      color: theme.text,
+      fontWeight: '500',
+      marginTop: 8,
     },
     editButton: {
       padding: 6,
