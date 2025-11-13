@@ -37,6 +37,15 @@ const GoogleLogo = ({ size = 20 }: { size?: number }) => (
   </Svg>
 );
 
+const FacebookLogo = ({ size = 20 }: { size?: number }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" style={{ marginRight: 12 }}>
+    <Path
+      d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
+      fill="#1877F2"
+    />
+  </Svg>
+);
+
 export default function SignupScreen() {
   const { theme } = useTheme();
   const [firstName, setFirstName] = useState('');
@@ -46,7 +55,8 @@ export default function SignupScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const { signUp, signInWithGoogle } = useAuth();
+  const [facebookLoading, setFacebookLoading] = useState(false);
+  const { signUp, signInWithGoogle, signInWithFacebook } = useAuth();
   const router = useRouter();
 
   // Refs for field navigation
@@ -126,6 +136,21 @@ export default function SignupScreen() {
       }
     } finally {
       setGoogleLoading(false);
+    }
+  };
+
+  const handleFacebookSignIn = async () => {
+    setFacebookLoading(true);
+    try {
+      await signInWithFacebook();
+    } catch (error: any) {
+      if (Platform.OS === 'web') {
+        window.alert('Error: ' + (error.message || 'Failed to sign in with Facebook'));
+      } else {
+        Alert.alert('Error', error.message || 'Failed to sign in with Facebook');
+      }
+    } finally {
+      setFacebookLoading(false);
     }
   };
 
@@ -232,7 +257,7 @@ export default function SignupScreen() {
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleSignup}
-            disabled={loading || googleLoading}
+            disabled={loading || googleLoading || facebookLoading}
           >
             <Text style={styles.buttonText}>
               {loading ? 'Creating account...' : 'Create Account'}
@@ -248,7 +273,7 @@ export default function SignupScreen() {
           <TouchableOpacity
             style={[styles.googleButton, googleLoading && styles.buttonDisabled]}
             onPress={handleGoogleSignIn}
-            disabled={loading || googleLoading}
+            disabled={loading || googleLoading || facebookLoading}
           >
             {!googleLoading && <GoogleLogo size={20} />}
             <Text style={styles.googleButtonText}>
@@ -257,9 +282,20 @@ export default function SignupScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
+            style={[styles.facebookButton, facebookLoading && styles.buttonDisabled]}
+            onPress={handleFacebookSignIn}
+            disabled={loading || googleLoading || facebookLoading}
+          >
+            {!facebookLoading && <FacebookLogo size={20} />}
+            <Text style={styles.facebookButtonText}>
+              {facebookLoading ? 'Signing in with Facebook...' : 'Continue with Facebook'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
             style={styles.loginLink}
             onPress={() => router.back()}
-            disabled={loading || googleLoading}
+            disabled={loading || googleLoading || facebookLoading}
           >
             <Text style={styles.loginLinkText}>
               Already have an account? <Text style={styles.loginLinkBold}>Sign In</Text>
@@ -378,6 +414,23 @@ const createStyles = (theme: any) =>
       marginBottom: 12,
     },
     googleButtonText: {
+      color: '#374151',
+      fontSize: 16,
+      fontFamily: theme.fontRegular,
+      fontWeight: '600',
+    },
+    facebookButton: {
+      backgroundColor: theme.card,
+      borderWidth: 1,
+      borderColor: '#d1d5db',
+      borderRadius: 12,
+      padding: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 12,
+    },
+    facebookButtonText: {
       color: '#374151',
       fontSize: 16,
       fontFamily: theme.fontRegular,
