@@ -6,7 +6,7 @@
 
 ## Executive Summary
 
-The comprehensive testing infrastructure for the 12-Step Tracker application has been successfully implemented. The project now has a robust testing foundation with 223 passing tests across 21 test suites, comprehensive E2E test flows, and complete documentation.
+The comprehensive testing infrastructure for the Sobriety Waypoint application has been successfully implemented. The project now has a robust testing foundation with 223 passing tests across 21 test suites, comprehensive E2E test flows, and complete documentation.
 
 ## Implementation Overview
 

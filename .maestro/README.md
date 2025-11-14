@@ -108,14 +108,14 @@ SPONSEE_EMAIL: sponsee.test@email.com
 
 Create these users in your Supabase test environment:
 
-1. **General User**: `e2e.test@twelvesteptracker.app` - For basic functionality tests
-2. **New User**: `e2e.newuser@twelvesteptracker.app` - For signup and first-time flows
-3. **Onboarding User**: `e2e.onboarding@twelvesteptracker.app` - For onboarding flow testing
-4. **Sponsor**: `e2e.sponsor@twelvesteptracker.app` - For sponsor-specific features
-5. **Sponsee**: `e2e.sponsee@twelvesteptracker.app` - For sponsee-specific features
-6. **Profile Test User**: `e2e.profile@twelvesteptracker.app` - For profile management tests
-7. **Relationship Test User 1**: `e2e.rel1@twelvesteptracker.app` - For relationship tests
-8. **Relationship Test User 2**: `e2e.rel2@twelvesteptracker.app` - For relationship tests
+1. **General User**: `e2e.test@sobrietywaypoint.app` - For basic functionality tests
+2. **New User**: `e2e.newuser@sobrietywaypoint.app` - For signup and first-time flows
+3. **Onboarding User**: `e2e.onboarding@sobrietywaypoint.app` - For onboarding flow testing
+4. **Sponsor**: `e2e.sponsor@sobrietywaypoint.app` - For sponsor-specific features
+5. **Sponsee**: `e2e.sponsee@sobrietywaypoint.app` - For sponsee-specific features
+6. **Profile Test User**: `e2e.profile@sobrietywaypoint.app` - For profile management tests
+7. **Relationship Test User 1**: `e2e.rel1@sobrietywaypoint.app` - For relationship tests
+8. **Relationship Test User 2**: `e2e.rel2@sobrietywaypoint.app` - For relationship tests
 
 All test accounts should use password: `TestPassword123!`
 

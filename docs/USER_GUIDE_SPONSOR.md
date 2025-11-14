@@ -515,7 +515,7 @@ For app issues:
 
 - Check for updates
 - Review help documentation
-- Contact support: support@12steptracker.com
+- Contact support: support@sobrietywaypoint.com
 
 ### Sponsorship Resources
 

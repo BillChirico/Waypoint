@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document provides comprehensive API documentation for the Supabase backend integration in the 12-Step Tracker application. The app uses Supabase for authentication, real-time database operations, and row-level security (RLS) policies.
+This document provides comprehensive API documentation for the Supabase backend integration in the Sobriety Waypoint application. The app uses Supabase for authentication, real-time database operations, and row-level security (RLS) policies.
 
 ## Table of Contents
 

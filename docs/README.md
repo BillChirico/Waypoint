@@ -245,7 +245,7 @@ When adding a new feature:
 
 **Technical Support**:
 
-- Email: support@12steptracker.com
+- Email: support@sobrietywaypoint.com
 - Check user guides for common questions
 
 **Recovery Support**:

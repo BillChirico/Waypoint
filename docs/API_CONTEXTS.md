@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document provides comprehensive API documentation for the React Context providers used in the 12-Step Tracker application. The app uses two main context providers: `AuthContext` for authentication and user management, and `ThemeContext` for theme management.
+This document provides comprehensive API documentation for the React Context providers used in the Sobriety Waypoint application. The app uses two main context providers: `AuthContext` for authentication and user management, and `ThemeContext` for theme management.
 
 ## Table of Contents
 

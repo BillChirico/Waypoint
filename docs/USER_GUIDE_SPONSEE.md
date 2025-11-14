@@ -310,7 +310,7 @@ If you encounter technical issues:
 - Check for app updates in your app store
 - Try logging out and back in
 - Clear app cache (in Profile > Settings)
-- Contact support: support@12steptracker.com
+- Contact support: support@sobrietywaypoint.com
 
 ### Recovery Support
 
