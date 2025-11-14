@@ -1,10 +1,9 @@
-# 12-Step Tracker
+# Sobriety Waypoint
 
-[![CI](https://github.com/BillChirico/12-Step-Tracker/workflows/CI/badge.svg)](https://github.com/BillChirico/12-Step-Tracker/actions)
-[![Coverage](https://codecov.io/gh/BillChirico/12-Step-Tracker/branch/main/graph/badge.svg)](https://codecov.io/gh/BillChirico/12-Step-Tracker)
-[![Expo](https://img.shields.io/badge/Expo-54-000020?logo=expo&logoColor=white)](https://expo.dev/accounts/BillChirico/projects/12-step-tracker)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+[![Expo](https://img.shields.io/badge/Expo-54-000020?logo=expo&logoColor=white)](https://expo.dev/accounts/BillChirico/projects/sobriety-waypoint)
 
-A cross-platform companion app that helps sponsors and sponsees stay connected, complete 12-step work, and celebrate recovery milestones together.
+A cross-platform companion app that helps sponsors and sponsees stay connected, complete recovery program work, and celebrate sobriety milestones together.
 
 - [Overview](#overview)
 - [Tech Stack](#tech-stack)
@@ -18,7 +17,7 @@ A cross-platform companion app that helps sponsors and sponsees stay connected, 
 
 ## Overview
 
-12-Step Tracker combines recovery content, accountability tools, and secure messaging so sponsors can guide sponsees through the AA program without losing context. Everything—tasks, reflections, relapse resets, and progress—lives in one privacy-first workspace.
+Sobriety Waypoint combines recovery content, accountability tools, and secure messaging so sponsors can guide sponsees through the AA program without losing context. Everything—tasks, reflections, relapse resets, and progress—lives in one privacy-first workspace.
 
 ### Highlights
 
@@ -26,7 +25,7 @@ A cross-platform companion app that helps sponsors and sponsees stay connected, 
 - Step-aligned task assignments, reminders, and completion tracking
 - Direct messaging with Row Level Security-backed privacy
 - Sobriety day counters, relapse restart workflows, and milestone logging
-- Full 12-step content with prompts and personal reflections
+- Full recovery program content with prompts and personal reflections
 - Theme-aware UI (light/dark/system) with Expo Router navigation guardrails
 - Runs on iOS, Android, and web from a single Expo codebase
 
@@ -50,7 +49,7 @@ A cross-platform companion app that helps sponsors and sponsees stay connected, 
 - `types/database.ts`: fully generated database types used throughout the app
 
 ```
-12-Step-Tracker/
+Sobriety-Waypoint/
 ├── app/ (router, screens, layouts)
 ├── components/ (shared UI)
 ├── contexts/ (AuthContext, ThemeContext)
@@ -74,7 +73,7 @@ A cross-platform companion app that helps sponsors and sponsees stay connected, 
 1. Clone and install dependencies
    ```bash
    git clone <repository-url>
-   cd 12-Step-Tracker
+   cd Sobriety-Waypoint
    pnpm install
    ```
 2. Create `.env` in the project root
@@ -170,7 +169,7 @@ Templates live in `docs/templates/` for components, hooks, integration tests, an
   - `EXPO_PUBLIC_SUPABASE_URL`
   - `EXPO_PUBLIC_SUPABASE_ANON_KEY`
   - `EXPO_TOKEN` (create via `expo.dev` → Access Tokens)
-- Monitor native builds at [Expo builds dashboard](https://expo.dev/accounts/BillChirico/projects/12-step-tracker/builds)
+- Monitor native builds at [Expo builds dashboard](https://expo.dev/accounts/BillChirico/projects/sobriety-waypoint/builds)
 
 ## Documentation & Helpful Links
 
