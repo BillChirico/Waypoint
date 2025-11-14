@@ -1,6 +1,6 @@
 # Facebook Sign In Setup Guide
 
-This guide walks you through setting up Facebook authentication for the 12-Step Tracker app.
+This guide walks you through setting up Facebook authentication for the Sobriety Waypoint app.
 
 ## Prerequisites
 
@@ -23,7 +23,7 @@ The Facebook Sign In integration supports:
 2. Click "My Apps" → "Create App"
 3. Select "Consumer" as the app type
 4. Fill in:
-   - **App Name**: 12 Step Tracker
+   - **App Name**: Sobriety Waypoint
    - **App Contact Email**: Your email
 5. Click "Create App"
 
@@ -55,7 +55,7 @@ The Facebook Sign In integration supports:
 
 1. Go to Settings → Basic → iOS
 2. Add:
-   - **Bundle ID**: `com.billchirico.12steptracker`
+   - **Bundle ID**: `com.billchirico.sobrietywaypoint`
    - Enable "Single Sign On"
 3. Save changes
 
@@ -63,7 +63,7 @@ The Facebook Sign In integration supports:
 
 1. Go to Settings → Basic → Android
 2. Add:
-   - **Package Name**: `com.billchirico.twelvesteptracker`
+   - **Package Name**: `com.billchirico.sobrietywaypoint`
    - **Class Name**: Leave default or use your main activity
    - **Key Hashes**: Generate and add your development/production key hashes
 3. Save changes
@@ -130,7 +130,7 @@ The app.json is already configured with the Facebook plugin:
         "expo-facebook",
         {
           "appID": "EXPO_PUBLIC_FACEBOOK_APP_ID",
-          "displayName": "12 Step Tracker",
+          "displayName": "Sobriety Waypoint",
           "scheme": "fb${EXPO_PUBLIC_FACEBOOK_APP_ID}",
           "advertiserIDCollectionEnabled": false,
           "autoLogAppEventsEnabled": false
