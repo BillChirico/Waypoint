@@ -66,7 +66,7 @@
     "lucide-react-native": "^0.553.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "react-native": "0.82.1",
+    "react-native": "~0.81.0",
     "react-native-gesture-handler": "~2.29.1",
     "react-native-reanimated": "~4.1.1",
     "react-native-safe-area-context": "~5.6.0",
