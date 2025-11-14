@@ -125,11 +125,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (session?.user) {
         await createOAuthProfileIfNeeded(session.user);
         await fetchProfile(session.user.id);
+        setLoading(false);
       } else {
         setProfile(null);
+        setLoading(false);
       }
-
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -170,6 +170,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         path: 'auth/callback',
       });
 
+      console.log('[Google Auth] Redirect URL:', redirectUrl);
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -181,24 +183,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
 
       if (data?.url) {
+        console.log('[Google Auth] Opening browser with URL:', data.url);
         const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
 
+        console.log('[Google Auth] Browser result type:', result.type);
+
         if (result.type === 'success' && result.url) {
+          console.log('[Google Auth] Full redirect URL:', result.url);
+
           const url = new URL(result.url);
+
+          // Log what's in query params
+          console.log(
+            '[Google Auth] Query params access_token:',
+            url.searchParams.get('access_token')
+          );
+          console.log(
+            '[Google Auth] Query params refresh_token:',
+            url.searchParams.get('refresh_token')
+          );
+
+          // Log what's in the hash/fragment
+          console.log('[Google Auth] URL hash:', url.hash);
+
+          // Try extracting from hash
+          const hashParams = new URLSearchParams(url.hash.substring(1)); // Remove leading #
+          console.log('[Google Auth] Hash access_token:', hashParams.get('access_token'));
+          console.log('[Google Auth] Hash refresh_token:', hashParams.get('refresh_token'));
+
           const access_token = url.searchParams.get('access_token');
           const refresh_token = url.searchParams.get('refresh_token');
 
           if (access_token && refresh_token) {
+            console.log('[Google Auth] Tokens found in query params, setting session');
             const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
               access_token,
               refresh_token,
             });
 
-            if (sessionError) throw sessionError;
+            if (sessionError) {
+              console.error('[Google Auth] setSession error:', sessionError);
+              throw sessionError;
+            }
+
+            console.log('[Google Auth] Session created successfully');
 
             if (sessionData.user) {
               await createOAuthProfileIfNeeded(sessionData.user);
             }
+          } else {
+            console.warn('[Google Auth] No tokens found in query params');
           }
         }
       }
