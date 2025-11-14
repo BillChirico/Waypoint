@@ -1,6 +1,6 @@
 # CI/CD Documentation
 
-This document provides detailed information about the continuous integration and deployment setup for the 12-Step Tracker project.
+This document provides detailed information about the continuous integration and deployment setup for the Sobriety Waypoint project.
 
 ## Table of Contents
 
@@ -396,7 +396,7 @@ The workflow uses GitHub Actions cache to speed up builds:
 
 **Monitoring EAS Builds**:
 
-1. Visit Expo dashboard: https://expo.dev/accounts/[account]/projects/12-step-tracker/builds
+1. Visit Expo dashboard: https://expo.dev/accounts/[account]/projects/sobriety-waypoint/builds
 2. Check build logs for detailed error messages
 3. Use `eas build:list` command locally to see build status
 
@@ -428,7 +428,7 @@ The workflow uses GitHub Actions cache to speed up builds:
 **Mobile Build Artifacts (Android/iOS)**:
 
 - Managed by EAS, not stored in GitHub Actions artifacts
-- Access via Expo dashboard: https://expo.dev/accounts/[account]/projects/12-step-tracker/builds
+- Access via Expo dashboard: https://expo.dev/accounts/[account]/projects/sobriety-waypoint/builds
 - Download APK (Android) or IPA (iOS) files from Expo
 - Build logs available in Expo dashboard
 - Builds retained according to your Expo plan
@@ -438,7 +438,7 @@ The workflow uses GitHub Actions cache to speed up builds:
 Add to README if desired:
 
 ```markdown
-![CI](https://github.com/YOUR_USERNAME/12-Step-Tracker/workflows/CI/badge.svg)
+![CI](https://github.com/YOUR_USERNAME/Sobriety-Waypoint/workflows/CI/badge.svg)
 ```
 
 ## Future Enhancements
@@ -510,7 +510,7 @@ eas build:list          # List recent builds
 ### Important Links
 
 - **GitHub Actions**: [Repository Actions Tab](../../actions)
-- **EAS Dashboard**: https://expo.dev/accounts/[account]/projects/12-step-tracker/builds
+- **EAS Dashboard**: https://expo.dev/accounts/[account]/projects/sobriety-waypoint/builds
 - **CI Workflow**: `.github/workflows/ci.yml`
 - **EAS Config**: `eas.json`
 - **Git Hooks**: `.github/GIT_HOOKS.md`
