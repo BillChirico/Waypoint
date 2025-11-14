@@ -79,7 +79,7 @@ export default function OnboardingScreen() {
     return (
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.content}>
-          <Text style={styles.title}>Welcome to 12-Step Tracker</Text>
+          <Text style={styles.title}>Welcome to Sobriety Waypoint</Text>
           <Text style={styles.subtitle}>Let&apos;s get to know you</Text>
 
           <View style={styles.nameContainer}>
