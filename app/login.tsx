@@ -97,7 +97,7 @@ export default function LoginScreen() {
           <View style={styles.iconContainer}>
             <Heart size={48} color="#007AFF" fill="#007AFF" />
           </View>
-          <Text style={styles.title}>12-Step Tracker</Text>
+          <Text style={styles.title}>Sobriety Waypoint</Text>
           <Text style={styles.subtitle}>Your journey to recovery</Text>
         </View>
 
