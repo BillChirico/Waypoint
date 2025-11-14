@@ -1,8 +1,8 @@
 # User Guide for Sponsors
 
-## Welcome to 12-Step Tracker
+## Welcome to Sobriety Waypoint
 
-This guide will help you use the 12-Step Tracker app as a sponsor, supporting your sponsees through their recovery journey using the 12-step program.
+This guide will help you use the Sobriety Waypoint app as a sponsor, supporting your sponsees through their recovery journey using the recovery program.
 
 ## Table of Contents
 
@@ -141,7 +141,7 @@ Tasks are the primary way you guide sponsees through their recovery journey.
    - **Title**: Brief, clear task name (e.g., "Write Fourth Step Inventory")
    - **Description**: Detailed instructions and expectations
    - **Sponsee**: Select which sponsee to assign to
-   - **Step Number**: Associate with a step (1-12)
+   - **Step Number**: Associate with a step (Step 1-12)
    - **Due Date**: Set a reasonable deadline
 4. **Review and Save**
 5. **Notification Sent**: Sponsee receives notification of new task
@@ -231,7 +231,7 @@ View comprehensive progress for each sponsee:
 
 ### Progress Indicators
 
-- **Step Progress**: Visual representation of their journey through the 12 steps
+- **Step Progress**: Visual representation of their journey through the recovery steps
 - **Task Completion**: Percentage of completed vs. assigned tasks
 - **Engagement**: Frequency of app usage and message responses
 - **Sobriety Milestones**: Upcoming anniversaries and important dates
@@ -316,7 +316,7 @@ Watch for signs a sponsee might need extra support:
 - **Bio**: Share your recovery story and experience
   - Years sober
   - Experience with sponsoring
-  - Your approach to the 12 steps
+  - Your approach to the recovery steps
 - **Sobriety Date**: Your sobriety anniversary
 - **Contact Preferences**: How sponsees can reach you
 
@@ -534,7 +534,7 @@ For app issues:
 
 ## Conclusion
 
-Thank you for being a sponsor and supporting others in their recovery journey. The 12-Step Tracker is designed to make your sponsorship more effective and organized, allowing you to focus on what matters most: helping others achieve sobriety.
+Thank you for being a sponsor and supporting others in their recovery journey. Sobriety Waypoint is designed to make your sponsorship more effective and organized, allowing you to focus on what matters most: helping others achieve sobriety.
 
 Remember: Your experience and guidance are invaluable. Use this app as a tool to enhance your sponsorship, not replace the human connection that makes recovery possible.
 

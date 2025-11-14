@@ -1,15 +1,15 @@
 # User Guide for Sponsees
 
-## Welcome to 12-Step Tracker
+## Welcome to Sobriety Waypoint
 
-This guide will help you navigate the 12-Step Tracker app as a sponsee working through your recovery journey with the support of a sponsor.
+This guide will help you navigate the Sobriety Waypoint app as a sponsee working through your recovery journey with the support of a sponsor.
 
 ## Table of Contents
 
 1. [Getting Started](#getting-started)
 2. [Home Dashboard](#home-dashboard)
 3. [Working with Tasks](#working-with-tasks)
-4. [Exploring the 12 Steps](#exploring-the-12-steps)
+4. [Exploring the Recovery Steps](#exploring-the-recovery-steps)
 5. [Tracking Your Journey](#tracking-your-journey)
 6. [Communicating with Your Sponsor](#communicating-with-your-sponsor)
 7. [Managing Your Profile](#managing-your-profile)
@@ -59,7 +59,7 @@ The home screen is your central hub, displaying:
 
 ## Working with Tasks
 
-Tasks are assignments from your sponsor to help you work through the 12 steps.
+Tasks are assignments from your sponsor to help you work through the recovery steps.
 
 ### Viewing Tasks
 
@@ -92,15 +92,15 @@ Each task includes:
 
 - **Title**: Brief description of the task
 - **Description**: Detailed instructions from your sponsor
-- **Step Number**: Which of the 12 steps this task relates to
+- **Step Number**: Which of the recovery steps this task relates to
 - **Due Date**: When the task should be completed
 - **Status**: Current state (pending/in-progress/completed)
 
 ---
 
-## Exploring the 12 Steps
+## Exploring the Recovery Steps
 
-The Steps tab provides content and guidance for each of the 12 steps.
+The Steps tab provides content and guidance for each of the recovery steps.
 
 ### Navigating Steps
 
@@ -128,7 +128,7 @@ The Journey tab helps you visualize your recovery progress.
 ### Features
 
 - **Sobriety Timeline**: Visual representation of your recovery journey
-- **Step Progress**: See how far you've advanced through the 12 steps
+- **Step Progress**: See how far you've advanced through the recovery steps
 - **Milestone Celebrations**: Recognition for important dates and achievements
 - **Personal Notes**: Private space to journal your thoughts and reflections
 
@@ -324,7 +324,7 @@ For immediate recovery support:
 
 ## Conclusion
 
-The 12-Step Tracker is here to support your recovery journey. Use it as a tool to stay connected with your sponsor, track your progress, and work through the steps at your own pace.
+Sobriety Waypoint is here to support your recovery journey. Use it as a tool to stay connected with your sponsor, track your progress, and work through the steps at your own pace.
 
 Remember: Recovery is a journey, not a destination. Take it one day at a time, and celebrate every step forward.
 
