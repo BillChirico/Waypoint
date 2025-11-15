@@ -165,14 +165,14 @@ message: `Join me on Sobriety Waypoint! Use invite code: ${code}`
 
 ### Test Files (2 files)
 
-****tests**/app/onboarding.test.tsx**
+\***\*tests**/app/onboarding.test.tsx\*\*
 
 ```typescript
 // Line ~80
 expect(getByText('Welcome to Sobriety Waypoint')).toBeTruthy();
 ```
 
-****tests**/app/login.test.tsx**
+\***\*tests**/app/login.test.tsx\*\*
 
 ```typescript
 // Line ~110
