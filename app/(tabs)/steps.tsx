@@ -15,10 +15,27 @@ export default function StepsScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchSteps();
-    fetchProgress();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  const fetchProgress = useCallback(async () => {
+    if (!profile) return;
+
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('user_step_progress')
+        .select('*')
+        .eq('user_id', profile.id);
+
+      if (fetchError) {
+        console.error('Error fetching progress:', fetchError);
+      } else {
+        const progressMap: Record<number, UserStepProgress> = {};
+        data?.forEach(p => {
+          progressMap[p.step_number] = p;
+        });
+        setProgress(progressMap);
+      }
+    } catch (err) {
+      console.error('Exception fetching progress:', err);
+    }
   }, [profile]);
 
   const fetchSteps = async () => {
@@ -45,28 +62,10 @@ export default function StepsScreen() {
     }
   };
 
-  const fetchProgress = useCallback(async () => {
-    if (!profile) return;
-
-    try {
-      const { data, error: fetchError } = await supabase
-        .from('user_step_progress')
-        .select('*')
-        .eq('user_id', profile.id);
-
-      if (fetchError) {
-        console.error('Error fetching progress:', fetchError);
-      } else {
-        const progressMap: Record<number, UserStepProgress> = {};
-        data?.forEach(p => {
-          progressMap[p.step_number] = p;
-        });
-        setProgress(progressMap);
-      }
-    } catch (err) {
-      console.error('Exception fetching progress:', err);
-    }
-  }, [profile]);
+  useEffect(() => {
+    fetchSteps();
+    fetchProgress();
+  }, [fetchProgress]);
 
   const toggleStepCompletion = async (stepNumber: number) => {
     if (!profile) return;

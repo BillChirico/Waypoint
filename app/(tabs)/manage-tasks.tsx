@@ -26,11 +26,6 @@ export default function ManageTasksScreen() {
   const [filterStatus, setFilterStatus] = useState<'all' | 'assigned' | 'completed'>('all');
   const [selectedSponseeFilter, setSelectedSponseeFilter] = useState<string>('all');
 
-  useEffect(() => {
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile]);
-
   const fetchData = useCallback(async () => {
     if (!profile) return;
 
@@ -53,6 +48,10 @@ export default function ManageTasksScreen() {
 
     setTasks(taskData || []);
   }, [profile]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const onRefresh = async () => {
     setRefreshing(true);

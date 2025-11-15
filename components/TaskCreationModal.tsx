@@ -48,19 +48,6 @@ export default function TaskCreationModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (preselectedSponseeId) {
-      setSelectedSponseeId(preselectedSponseeId);
-    }
-  }, [preselectedSponseeId]);
-
-  useEffect(() => {
-    if (visible) {
-      fetchTemplates();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible, selectedStepNumber]);
-
   const fetchTemplates = useCallback(async () => {
     if (!selectedStepNumber) {
       setTemplates([]);
@@ -73,6 +60,18 @@ export default function TaskCreationModal({
       .order('title');
     setTemplates(data || []);
   }, [selectedStepNumber]);
+
+  useEffect(() => {
+    if (preselectedSponseeId) {
+      setSelectedSponseeId(preselectedSponseeId);
+    }
+  }, [preselectedSponseeId]);
+
+  useEffect(() => {
+    if (visible) {
+      fetchTemplates();
+    }
+  }, [visible, fetchTemplates]);
 
   const handleTemplateSelect = (template: TaskTemplate) => {
     setSelectedTemplate(template);

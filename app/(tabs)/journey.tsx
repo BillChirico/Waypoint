@@ -54,13 +54,6 @@ export default function JourneyScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchTimelineData();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
-  );
-
   const fetchTimelineData = useCallback(async () => {
     if (!profile) return;
 
@@ -232,6 +225,12 @@ export default function JourneyScreen() {
       setLoading(false);
     }
   }, [profile, theme]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchTimelineData();
+    }, [fetchTimelineData])
+  );
 
   const getIcon = (iconType: string, color: string) => {
     const size = 20;
