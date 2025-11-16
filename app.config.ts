@@ -4,7 +4,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   extra: {
     eas: {
-      projectId: 'ca075b23-5398-4570-a6c4-286468f78eb1',
+      projectId: '8d64bbe4-27d4-41ac-9421-9c2758e4765a',
     },
   },
   name: 'Sobriety Waypoint',
