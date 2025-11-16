@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { StepContent, UserStepProgress } from '@/types/database';
-import { BookOpen, X, CheckCircle, Circle } from 'lucide-react-native';
+import { X, CheckCircle, Circle } from 'lucide-react-native';
 
 export default function StepsScreen() {
   const { theme } = useTheme();
@@ -15,9 +15,27 @@ export default function StepsScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchSteps();
-    fetchProgress();
+  const fetchProgress = useCallback(async () => {
+    if (!profile) return;
+
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('user_step_progress')
+        .select('*')
+        .eq('user_id', profile.id);
+
+      if (fetchError) {
+        console.error('Error fetching progress:', fetchError);
+      } else {
+        const progressMap: Record<number, UserStepProgress> = {};
+        data?.forEach(p => {
+          progressMap[p.step_number] = p;
+        });
+        setProgress(progressMap);
+      }
+    } catch (err) {
+      console.error('Exception fetching progress:', err);
+    }
   }, [profile]);
 
   const fetchSteps = async () => {
@@ -44,28 +62,10 @@ export default function StepsScreen() {
     }
   };
 
-  const fetchProgress = async () => {
-    if (!profile) return;
-
-    try {
-      const { data, error: fetchError } = await supabase
-        .from('user_step_progress')
-        .select('*')
-        .eq('user_id', profile.id);
-
-      if (fetchError) {
-        console.error('Error fetching progress:', fetchError);
-      } else {
-        const progressMap: Record<number, UserStepProgress> = {};
-        data?.forEach(p => {
-          progressMap[p.step_number] = p;
-        });
-        setProgress(progressMap);
-      }
-    } catch (err) {
-      console.error('Exception fetching progress:', err);
-    }
-  };
+  useEffect(() => {
+    fetchSteps();
+    fetchProgress();
+  }, [fetchProgress]);
 
   const toggleStepCompletion = async (stepNumber: number) => {
     if (!profile) return;

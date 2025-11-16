@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "Sentry": {
-      "url": "https://mcp.sentry.dev/mcp/volvox/12-step-tracker"
+      "url": "https://mcp.sentry.dev/mcp/volvox/sobriety-waypoint"
     }
   }
 }

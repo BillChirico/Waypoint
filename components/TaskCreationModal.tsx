@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -48,19 +48,7 @@ export default function TaskCreationModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (preselectedSponseeId) {
-      setSelectedSponseeId(preselectedSponseeId);
-    }
-  }, [preselectedSponseeId]);
-
-  useEffect(() => {
-    if (visible) {
-      fetchTemplates();
-    }
-  }, [visible, selectedStepNumber]);
-
-  const fetchTemplates = async () => {
+  const fetchTemplates = useCallback(async () => {
     if (!selectedStepNumber) {
       setTemplates([]);
       return;
@@ -71,7 +59,19 @@ export default function TaskCreationModal({
       .eq('step_number', selectedStepNumber)
       .order('title');
     setTemplates(data || []);
-  };
+  }, [selectedStepNumber]);
+
+  useEffect(() => {
+    if (preselectedSponseeId) {
+      setSelectedSponseeId(preselectedSponseeId);
+    }
+  }, [preselectedSponseeId]);
+
+  useEffect(() => {
+    if (visible) {
+      fetchTemplates();
+    }
+  }, [visible, fetchTemplates]);
 
   const handleTemplateSelect = (template: TaskTemplate) => {
     setSelectedTemplate(template);
@@ -122,8 +122,6 @@ export default function TaskCreationModal({
       const { error: insertError } = await supabase.from('tasks').insert(taskData);
 
       if (insertError) throw insertError;
-
-      const selectedSponsee = sponsees.find(s => s.id === selectedSponseeId);
 
       await supabase.from('notifications').insert({
         user_id: selectedSponseeId,

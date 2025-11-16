@@ -31,7 +31,7 @@ export default function TabLayout() {
     if (index !== -1 && index !== activeIndex) {
       setActiveIndex(index);
     }
-  }, [pathname]);
+  }, [pathname, activeIndex]);
 
   const navItems: AnimatedNavItem[] = tabRoutes.map((tab, index) => ({
     label: tab.title,

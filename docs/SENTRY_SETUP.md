@@ -1,10 +1,10 @@
 # Sentry Setup Guide
 
-This guide provides step-by-step instructions for setting up Sentry error tracking and performance monitoring in the 12-Step Tracker app.
+This guide provides step-by-step instructions for setting up Sentry error tracking and performance monitoring in the Sobriety Waypoint app.
 
 ## Overview
 
-The 12-Step Tracker uses Sentry for production error tracking, performance monitoring, and session replay. Key features:
+The Sobriety Waypoint uses Sentry for production error tracking, performance monitoring, and session replay. Key features:
 
 - **Production-only monitoring**: Sentry only initializes when `APP_ENV=production` and not in development mode
 - **Privacy-first approach**: All sensitive recovery data is automatically scrubbed before sending to Sentry
@@ -50,7 +50,7 @@ Four environment variables are required for Sentry integration:
 
 **Format**: Project slug (lowercase, may contain hyphens)
 
-**Example**: `12-step-tracker`
+**Example**: `sobriety-waypoint`
 
 ### 4. SENTRY_AUTH_TOKEN (Secret - Build-time)
 
@@ -85,7 +85,7 @@ Four environment variables are required for Sentry integration:
 1. Click "Create Project" from the Sentry dashboard
 2. Select platform: **React Native**
 3. Set alert frequency: Choose "Alert me on every new issue" (recommended for new projects)
-4. Name your project: **12-step-tracker**
+4. Name your project: **sobriety-waypoint**
 5. Click "Create Project"
 
 ### 1.4 Get Your DSN
@@ -93,7 +93,7 @@ Four environment variables are required for Sentry integration:
 After creating the project:
 
 1. You'll see the DSN displayed on the setup page
-2. Alternatively, navigate to: **Settings** → **Projects** → **12-step-tracker** → **Client Keys (DSN)**
+2. Alternatively, navigate to: **Settings** → **Projects** → **sobriety-waypoint** → **Client Keys (DSN)**
 3. Copy the DSN URL (format: `https://[key]@[org].ingest.sentry.io/[project-id]`)
 4. Save this for the `EXPO_PUBLIC_SENTRY_DSN` environment variable
 
@@ -108,7 +108,7 @@ After creating the project:
 
 ### 2.2 Configure Token
 
-1. **Name**: "12-Step Tracker - EAS Builds"
+1. **Name**: "Sobriety Waypoint - EAS Builds"
 2. **Scopes**: Select the following (minimum required):
    - `project:read` - Read project data
    - `project:releases` - Create and manage releases
@@ -141,7 +141,7 @@ EXPO_PUBLIC_SENTRY_DSN=https://[key]@[org].ingest.sentry.io/[project-id]
 # Sentry Configuration (Build-time - Private)
 # Note: These are only used during builds, not at runtime
 SENTRY_ORG=your-org-slug
-SENTRY_PROJECT=12-step-tracker
+SENTRY_PROJECT=sobriety-waypoint
 SENTRY_AUTH_TOKEN=sntrys_your_token_here
 ```
 
@@ -188,7 +188,7 @@ eas secret:create --name EXPO_PUBLIC_SENTRY_DSN --value "https://[key]@[org].ing
 
 # Add build-time configuration
 eas secret:create --name SENTRY_ORG --value "your-org-slug" --type string
-eas secret:create --name SENTRY_PROJECT --value "12-step-tracker" --type string
+eas secret:create --name SENTRY_PROJECT --value "sobriety-waypoint" --type string
 
 # Add auth token (most sensitive)
 eas secret:create --name SENTRY_AUTH_TOKEN --value "sntrys_your_token_here" --type string
@@ -270,7 +270,7 @@ If you're using GitHub Actions for CI/CD, add the same secrets to your repositor
 | ------------------------ | --------------------------------------- |
 | `EXPO_PUBLIC_SENTRY_DSN` | Your Sentry DSN                         |
 | `SENTRY_ORG`             | Your organization slug                  |
-| `SENTRY_PROJECT`         | `12-step-tracker`                       |
+| `SENTRY_PROJECT`         | `sobriety-waypoint`                     |
 | `SENTRY_AUTH_TOKEN`      | Your auth token (starts with `sntrys_`) |
 
 ### 5.2 Verify Secrets
@@ -334,7 +334,7 @@ This will:
 After the build completes:
 
 1. Log in to [sentry.io](https://sentry.io)
-2. Navigate to your project: **12-step-tracker**
+2. Navigate to your project: **sobriety-waypoint**
 3. Go to **Releases**
 4. You should see a new release with the version from your `app.json`
 5. Click the release to see uploaded source maps (artifacts)
@@ -732,7 +732,7 @@ If you encounter issues not covered in this guide:
 Before going to production, ensure:
 
 - [ ] Sentry account created
-- [ ] Project "12-step-tracker" created in Sentry
+- [ ] Project "sobriety-waypoint" created in Sentry
 - [ ] DSN obtained and configured
 - [ ] Auth token created with correct scopes
 - [ ] All 4 environment variables configured in `.env`

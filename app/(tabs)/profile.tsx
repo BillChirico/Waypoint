@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -165,7 +165,7 @@ export default function ProfileScreen() {
     [key: string]: { total: number; completed: number };
   }>({});
 
-  const fetchRelationships = async () => {
+  const fetchRelationships = useCallback(async () => {
     if (!profile) return;
 
     setLoadingRelationships(true);
@@ -210,11 +210,11 @@ export default function ProfileScreen() {
     } finally {
       setLoadingRelationships(false);
     }
-  };
+  }, [profile]);
 
   useEffect(() => {
     fetchRelationships();
-  }, [profile]);
+  }, [profile, fetchRelationships]);
 
   // Use hook for current user's days sober
   const {
@@ -262,7 +262,7 @@ export default function ProfileScreen() {
               text: 'Share',
               onPress: () =>
                 Share.share({
-                  message: `Join me on 12-Step Tracker! Use invite code: ${code}`,
+                  message: `Join me on Sobriety Waypoint! Use invite code: ${code}`,
                 }),
             },
             { text: 'OK' },
@@ -1046,7 +1046,7 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>12-Step Tracker v{packageJson.version}</Text>
+        <Text style={styles.footerText}>Sobriety Waypoint v{packageJson.version}</Text>
         <Text style={styles.footerSubtext}>Supporting recovery, one day at a time</Text>
         <TouchableOpacity onPress={() => Linking.openURL('https://billchirico.dev')}>
           <Text style={styles.footerCredit}>By Bill Chirico</Text>

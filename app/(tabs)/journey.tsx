@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -54,13 +54,7 @@ export default function JourneyScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchTimelineData();
-    }, [profile])
-  );
-
-  const fetchTimelineData = async () => {
+  const fetchTimelineData = useCallback(async () => {
     if (!profile) return;
 
     try {
@@ -230,7 +224,13 @@ export default function JourneyScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [profile, theme]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchTimelineData();
+    }, [fetchTimelineData])
+  );
 
   const getIcon = (iconType: string, color: string) => {
     const size = 20;

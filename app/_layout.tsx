@@ -14,7 +14,7 @@ import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { View, ActivityIndicator, StyleSheet, Text, TextInput } from 'react-native';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useFonts } from 'expo-font';
 import {
   JetBrainsMono_400Regular,
@@ -95,7 +95,7 @@ function RootLayoutNav() {
     } else if (user && !profile && !inOnboarding) {
       router.replace('/onboarding');
     }
-  }, [user, profile, segments, loading]);
+  }, [user, profile, segments, loading, router]);
 
   if (loading) {
     return (

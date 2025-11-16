@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/lib/supabase';
 import { Task, Profile } from '@/types/database';
-import { Plus, CheckCircle, Clock, Calendar, Trash2, Filter } from 'lucide-react-native';
+import { Plus, CheckCircle, Clock, Calendar, Trash2 } from 'lucide-react-native';
 import TaskCreationModal from '@/components/TaskCreationModal';
 
 export default function ManageTasksScreen() {
@@ -26,11 +26,7 @@ export default function ManageTasksScreen() {
   const [filterStatus, setFilterStatus] = useState<'all' | 'assigned' | 'completed'>('all');
   const [selectedSponseeFilter, setSelectedSponseeFilter] = useState<string>('all');
 
-  useEffect(() => {
-    fetchData();
-  }, [profile]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!profile) return;
 
     const { data: sponseeData } = await supabase
@@ -51,7 +47,11 @@ export default function ManageTasksScreen() {
       .order('created_at', { ascending: false });
 
     setTasks(taskData || []);
-  };
+  }, [profile]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const onRefresh = async () => {
     setRefreshing(true);

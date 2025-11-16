@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -16,7 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/lib/supabase';
 import { Task } from '@/types/database';
-import { CheckCircle, Circle, Clock, X, Calendar } from 'lucide-react-native';
+import { CheckCircle, Circle, X, Calendar } from 'lucide-react-native';
 
 export default function TasksScreen() {
   const { profile } = useAuth();
@@ -28,7 +28,7 @@ export default function TasksScreen() {
   const [completionNotes, setCompletionNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     if (!profile) return;
     const { data } = await supabase
       .from('tasks')
@@ -36,11 +36,11 @@ export default function TasksScreen() {
       .eq('sponsee_id', profile.id)
       .order('created_at', { ascending: false });
     setTasks(data || []);
-  };
+  }, [profile]);
 
   useEffect(() => {
     fetchTasks();
-  }, [profile]);
+  }, [profile, fetchTasks]);
 
   const onRefresh = async () => {
     setRefreshing(true);

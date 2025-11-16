@@ -9,14 +9,12 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Button,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Heart } from 'lucide-react-native';
 import { GoogleLogo, FacebookLogo } from '@/components/auth/SocialLogos';
-import * as Sentry from '@sentry/react-native';
 
 export default function LoginScreen() {
   const { theme } = useTheme();
@@ -97,7 +95,7 @@ export default function LoginScreen() {
           <View style={styles.iconContainer}>
             <Heart size={48} color="#007AFF" fill="#007AFF" />
           </View>
-          <Text style={styles.title}>12-Step Tracker</Text>
+          <Text style={styles.title}>Sobriety Waypoint</Text>
           <Text style={styles.subtitle}>Your journey to recovery</Text>
         </View>
 

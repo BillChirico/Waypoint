@@ -1,6 +1,6 @@
 # Project Overview
 
-## 12-Step Tracker
+## Sobriety Waypoint
 
 A React Native/Expo mobile and web application designed to support individuals in AA (Alcoholics Anonymous) recovery programs.
 

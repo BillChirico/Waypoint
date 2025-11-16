@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -39,7 +39,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const { daysSober, currentStreakStartDate, loading: loadingDaysSober } = useDaysSober();
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!profile) return;
 
     const { data: asSponsor } = await supabase
@@ -66,11 +66,11 @@ export default function HomeScreen() {
       .order('created_at', { ascending: false })
       .limit(3);
     setTasks(tasksData || []);
-  };
+  }, [profile]);
 
   useEffect(() => {
     fetchData();
-  }, [profile]);
+  }, [profile, fetchData]);
 
   const onRefresh = async () => {
     setRefreshing(true);

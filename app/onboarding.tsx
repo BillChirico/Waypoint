@@ -13,8 +13,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/lib/supabase';
-import { UserRole } from '@/types/database';
-import { Users, User, Calendar } from 'lucide-react-native';
+import { Calendar } from 'lucide-react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function OnboardingScreen() {
@@ -79,7 +78,7 @@ export default function OnboardingScreen() {
     return (
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.content}>
-          <Text style={styles.title}>Welcome to 12-Step Tracker</Text>
+          <Text style={styles.title}>Welcome to Sobriety Waypoint</Text>
           <Text style={styles.subtitle}>Let&apos;s get to know you</Text>
 
           <View style={styles.nameContainer}>
