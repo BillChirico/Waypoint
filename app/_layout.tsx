@@ -39,7 +39,6 @@ Sentry.init({
 
   // Enable Logs
   enableLogs: true,
-  enableMetrics: true,
 
   // Tracing Configuration
   enableUserInteractionTracing: true,

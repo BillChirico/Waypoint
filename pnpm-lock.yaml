@@ -9,10 +9,10 @@ importers:
   .:
     dependencies:
       '@expo-google-fonts/jetbrains-mono':
-        specifier: ^0.4.1
+        specifier: ~0.4.1
         version: 0.4.1
       '@expo/vector-icons':
-        specifier: ^15.0.2
+        specifier: ~15.0.2
         version: 15.0.3(expo-font@14.0.9(expo@54.0.23)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       '@lucide/lab':
         specifier: ^0.1.2
@@ -21,7 +21,7 @@ importers:
         specifier: ^2.2.0
         version: 2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))
       '@react-native-community/datetimepicker':
-        specifier: 8.4.4
+        specifier: ~8.4.4
         version: 8.4.4(expo@54.0.23)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       '@react-navigation/bottom-tabs':
         specifier: ^7.2.0
@@ -57,7 +57,7 @@ importers:
         specifier: ~6.0.17
         version: 6.0.17(expo@54.0.23)
       expo-facebook:
-        specifier: ^12.2.0
+        specifier: ~12.2.0
         version: 12.2.0(expo@54.0.23)
       expo-font:
         specifier: ~14.0.8
@@ -75,7 +75,7 @@ importers:
         specifier: ~6.0.14
         version: 6.0.14(2c6ce49ff253e05ba2ef0dbaf40b74ef)
       expo-secure-store:
-        specifier: ^15.0.7
+        specifier: ~15.0.7
         version: 15.0.7(expo@54.0.23)
       expo-splash-screen:
         specifier: ~31.0.10
@@ -120,7 +120,7 @@ importers:
         specifier: ~4.16.0
         version: 4.16.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       react-native-svg:
-        specifier: 15.12.1
+        specifier: ~15.12.1
         version: 15.12.1(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       react-native-url-polyfill:
         specifier: ^3.0.0
@@ -129,7 +129,7 @@ importers:
         specifier: ^0.21.0
         version: 0.21.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react-native-webview:
-        specifier: 13.15.0
+        specifier: ~13.15.0
         version: 13.15.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       react-native-worklets:
         specifier: ^0.5.1
